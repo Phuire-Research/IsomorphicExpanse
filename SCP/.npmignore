@@ -1,0 +1,31 @@
+# RELEASE W2 · THE PACKAGING SEAM (DIAMOND-RELEASE-CANDIDATE.md)
+# npm law: a `files` array in the ROOT package.json VOIDS the root .npmignore for
+# every path beneath a files-covered directory — but a NESTED .npmignore (this file)
+# is honored for its own subtree. This is the template SCP's tarball boundary.
+#
+# NOTE: this is .npmignore, NOT .gitignore — the SCP keeps its OWN git (the
+# separate-repo design; see .gitignore beside this file). This file only shapes
+# what ships inside the npm tarball.
+
+# Runtime bridge state — created fresh by the SCP + the CLI at run time
+# (mkdir recursive on every write). The dev copy carries a dev userCwd.
+Cascades/Bridge/
+
+# Dev session working documents — never user-facing.
+Cascades/Working/
+
+# The turn-over heartbeat — CLONE_SKIP_FILES already skips it at install;
+# finalizeScpInstall seeds it fresh (the C248 seed law).
+.bridge-restart.json
+
+# Cadmium Researcher runtime research data — regenerated per install; the
+# structural files (S8.json · menu.json · topics.json · assets · targeted demo)
+# still ship.
+Cascades/Extended/*/frontier/
+Cascades/Extended/*/Cascades/
+
+# Build + dependency artifacts (safety — the root .npmignore's intent, made real).
+dist/
+node_modules/
+coverage/
+*.tsbuildinfo

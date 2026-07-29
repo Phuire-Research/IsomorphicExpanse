@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.bridge-restart.json
+.bridge-detect.sentinel
+*.tsbuildinfo
+Cascades/Bridge/
+# C846 · THE PRIVACY PARTITION — born private: the personal substrate can never enter git
+# history, so the commit-locked share can never carry it (the clone travels tracked content
+# only). The shareable Suite 8 face lives in Cascades/8_SUITES/<name>/ (tracked). Runtime
+# self-heals absence: CWSD scaffolds Cascade.json at watcher-subscribe; Working/ and
+# Extended/ materialize on first use.
+#
+# THE IE RETENTION (the portability difference this SCP maintains): from the ordinarily-
+# private Extended substrate, the DIAMOND and ONYX documents SHIP — the working memory
+# (plan + trajectory) is part of this SCP's released value. Everything else private holds
+# back (frontier research, session state, Working/, Cascade.json). The `/**` file-glob form
+# (not the bare dir exclude) is REQUIRED: git cannot re-include a file whose parent
+# DIRECTORY is excluded — the glob excludes contents while the `!*/` re-opens traversal.
+Cascades/Extended/**
+!Cascades/Extended/*/
+!Cascades/Extended/*/DIAMOND*.md
+!Cascades/Extended/*/ONYX*.md
+Cascades/Working/
+Cascades/Cascade.json

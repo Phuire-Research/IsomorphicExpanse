@@ -1,0 +1,5 @@
+# THE IE PORTABILITY ROOT PARTITION — the repo-root Cascades/ carries runtime telemetry
+# ONLY (Bridge sinks: sessions.json, electron-debug.json — the pre-partition tracked
+# leaks retired with the new main). The SCP package's own privacy law lives at
+# SCP/.gitignore (the C846 partition + the IE Diamond/Onyx retention).
+/Cascades/

@@ -1,0 +1,1581 @@
+/* ============================================================
+ * HiFi Functional Design System — Global Tokens & Utility Classes
+ *
+ * Wave 1: Token Foundation (D1 Color Tokens + D2 Pattern Tiles)
+ * Wave 2: Pane / Border / Divider Classes (D3 + D5 + D8)
+ * Wave 3: Buttons + Typography + Spectrum Text (D6 + D7)
+ *
+ * Suite color schema (matches CLAUDE.md §4):
+ *   Red · Orange · Yellow · Green · Blue · Purple · Fuchsia
+ *   plus Base · Diamond · Onyx neutrals
+ * ============================================================ */
+
+/* SCS field identity — single source of truth (the showcase's raw `class="scs-input-field"`
+ * elements consume it here; ScsInput.vue/ScsTextarea.vue ALSO import this file directly so
+ * the rules travel with the component). NO drift — one definition.
+ * Citation: SCS-INPUT-EXPORT-DIAGNOSTIC.md (A2-as-non-self-containment). */
+@import './concepts/vue/components/scsInputField.css';
+
+:root {
+  /* ---- Suite Base (neutral) ---- */
+  --color-base: rgb(26, 26, 26);
+  --color-base-dark: rgb(22, 22, 22);
+  --color-base-light: rgb(30, 30, 30);
+  --fade-base: rgb(4, 4, 4);
+  --shadow-base: rgba(0, 0, 0, 0.4); /* D0 · completes the token family · static ground-chrome shadow (the runtime override leaves base-shadow static by design) */
+
+  /* ---- Suite 1 · Red ---- */
+  --color-red: rgb(239, 68, 68);
+  --color-red-dark: rgb(203, 58, 58);
+  --color-red-light: rgb(255, 78, 78);
+  --fade-red: rgb(36, 10, 10);
+  --shadow-red: rgba(203, 58, 58, 0.6);
+
+  /* ---- Suite 2 · Orange ---- */
+  --color-orange: rgb(249, 115, 22);
+  --color-orange-dark: rgb(212, 98, 19);
+  --color-orange-light: rgb(255, 132, 25);
+  --fade-orange: rgb(37, 17, 3);
+  --shadow-orange: rgba(212, 98, 19, 0.6);
+
+  /* ---- Suite 3 · Yellow ---- */
+  --color-yellow: rgb(234, 179, 8);
+  --color-yellow-dark: rgb(199, 152, 7);
+  --color-yellow-light: rgb(255, 206, 9);
+  --fade-yellow: rgb(35, 27, 1);
+  --shadow-yellow: rgba(199, 152, 7, 0.6);
+
+  /* ---- Suite 4 · Green ---- */
+  --color-green: rgb(34, 197, 94);
+  --color-green-dark: rgb(29, 167, 80);
+  --color-green-light: rgb(39, 227, 108);
+  --fade-green: rgb(5, 30, 14);
+  --shadow-green: rgba(29, 167, 80, 0.6);
+
+  /* ---- Suite 5 · Blue ---- */
+  --color-blue: rgb(59, 130, 246);
+  --color-blue-dark: rgb(50, 111, 209);
+  --color-blue-light: rgb(68, 150, 255);
+  --fade-blue: rgb(9, 20, 37);
+  --shadow-blue: rgba(50, 111, 209, 0.6);
+
+  /* ---- Suite 6 · Purple ---- */
+  --color-purple: rgb(168, 85, 247);
+  --color-purple-dark: rgb(143, 72, 210);
+  --color-purple-light: rgb(193, 98, 255);
+  --fade-purple: rgb(25, 13, 37);
+  --shadow-purple: rgba(143, 72, 210, 0.6);
+
+  /* ---- Suite 7 · Fuchsia ---- */
+  --color-fuchsia: rgb(236, 72, 153);
+  --color-fuchsia-dark: rgb(201, 61, 130);
+  --color-fuchsia-light: rgb(255, 83, 176);
+  --fade-fuchsia: rgb(35, 11, 23);
+  --shadow-fuchsia: rgba(201, 61, 130, 0.6);
+
+  /* ---- Suite-Aspect: Maroon (Suite 1) · ALIASED → red so a user re-tint flows through · R1 · Pewter HiFi Color Pass D0 ---- */
+  --color-maroon: var(--color-red);
+  --color-maroon-dark: var(--color-red-dark);
+  --color-maroon-light: var(--color-red-light);
+  --fade-maroon: var(--fade-red);
+  --shadow-maroon: var(--shadow-red);
+
+  /* ---- Suite-Aspect: Viridian (Suite 4) · ALIASED → green · R1 ---- */
+  --color-viridian: var(--color-green);
+  --color-viridian-dark: var(--color-green-dark);
+  --color-viridian-light: var(--color-green-light);
+  --fade-viridian: var(--fade-green);
+  --shadow-viridian: var(--shadow-green);
+
+  /* ---- Suite-Aspect: Cobalt (Suite 5) · ALIASED → blue · R1 ---- */
+  --color-cobalt: var(--color-blue);
+  --color-cobalt-dark: var(--color-blue-dark);
+  --color-cobalt-light: var(--color-blue-light);
+  --fade-cobalt: var(--fade-blue);
+  --shadow-cobalt: var(--shadow-blue);
+
+  /* ---- Suite-Aspect: Amethyst (Suite 6) · ALIASED → purple · R1 ---- */
+  --color-amethyst: var(--color-purple);
+  --color-amethyst-dark: var(--color-purple-dark);
+  --color-amethyst-light: var(--color-purple-light);
+  --fade-amethyst: var(--fade-purple);
+  --shadow-amethyst: var(--shadow-purple);
+
+  /* ---- Diamond (neutral · planning) ---- */
+  --color-diamond: rgb(42, 42, 42);
+  --color-diamond-dark: rgb(32, 32, 32);
+  --color-diamond-light: rgb(52, 52, 52);
+  --fade-diamond: rgb(8, 8, 8);
+  --shadow-diamond: rgba(180, 160, 120, 0.4);
+
+  /* ---- Onyx (neutral · record) ---- */
+  --color-onyx: rgb(12, 12, 14);
+  --color-onyx-dark: rgb(6, 6, 8);
+  --color-onyx-light: rgb(22, 22, 26);
+  --fade-onyx: rgb(2, 2, 3);
+  --shadow-onyx: rgba(0, 0, 0, 0.7);
+
+  /* ---- Board / Theme tokens ---- */
+  --color-board-dark: #0d0d0f;
+  --color-board-light: #16161a;
+  --color-board-surface: #1c1c21;
+  --color-board-elevated: #222228;
+
+  --color-white-conductor: #f0f0f0;
+  --color-white-muted: #a0a0a8;
+
+  /* ---- Font stacks ---- */
+  --font-heading: 'Orbitron', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+
+  /* ---- Pattern Tiles (SVG data URIs, 100x100 viewBox, white strokes at low opacity) ---- */
+  --pattern-base: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='15' cy='25' r='1' fill='white' opacity='0.15'/%3E%3Ccircle cx='45' cy='15' r='1.5' fill='white' opacity='0.2'/%3E%3Ccircle cx='75' cy='35' r='1' fill='white' opacity='0.15'/%3E%3Ccircle cx='25' cy='65' r='2' fill='white' opacity='0.1'/%3E%3Ccircle cx='55' cy='55' r='1' fill='white' opacity='0.25'/%3E%3Ccircle cx='85' cy='75' r='1.5' fill='white' opacity='0.15'/%3E%3Ccircle cx='35' cy='85' r='1' fill='white' opacity='0.2'/%3E%3Ccircle cx='65' cy='90' r='1.5' fill='white' opacity='0.3'/%3E%3Ccircle cx='95' cy='45' r='1' fill='white' opacity='0.15'/%3E%3Ccircle cx='10' cy='50' r='1' fill='white' opacity='0.2'/%3E%3C/svg%3E");
+
+  --pattern-red: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='35' height='35' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Crect x='55' y='55' width='35' height='35' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='27.5' cy='27.5' r='4' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='72.5' cy='72.5' r='4' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E");
+
+  --pattern-orange: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cline x1='20' y1='50' x2='95' y2='20' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cline x1='20' y1='50' x2='95' y2='50' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cline x1='20' y1='50' x2='95' y2='80' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='20' cy='50' r='15' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='20' cy='50' r='30' fill='none' stroke='white' stroke-width='1' opacity='0.15'/%3E%3C/svg%3E");
+
+  --pattern-yellow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cline x1='50' y1='0' x2='50' y2='100' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cline x1='0' y1='50' x2='100' y2='50' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cline x1='25' y1='0' x2='25' y2='100' stroke='white' stroke-width='1' opacity='0.1' stroke-dasharray='4 4'/%3E%3Cline x1='75' y1='0' x2='75' y2='100' stroke='white' stroke-width='1' opacity='0.1' stroke-dasharray='4 4'/%3E%3Ccircle cx='50' cy='50' r='2' fill='white' opacity='0.2'/%3E%3C/svg%3E");
+
+  --pattern-green: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 Q45 40 30 60 Q20 75 15 90' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M50 10 Q55 40 70 60 Q80 75 85 90' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M50 10 Q50 45 50 90' fill='none' stroke='white' stroke-width='1' opacity='0.15'/%3E%3Ccircle cx='15' cy='90' r='3' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='85' cy='90' r='3' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E");
+
+  --pattern-blue: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='25' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Crect x='45' y='15' width='10' height='12' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Crect x='45' y='73' width='10' height='12' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Crect x='15' y='45' width='12' height='10' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Crect x='73' y='45' width='12' height='10' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3C/svg%3E");
+
+  --pattern-purple: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='20' cy='20' r='3' fill='white' opacity='0.2'/%3E%3Ccircle cx='80' cy='20' r='3' fill='white' opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='3' fill='white' opacity='0.2'/%3E%3Ccircle cx='20' cy='80' r='3' fill='white' opacity='0.2'/%3E%3Ccircle cx='80' cy='80' r='3' fill='white' opacity='0.2'/%3E%3Cline x1='20' y1='20' x2='80' y2='20' stroke='white' stroke-width='1' opacity='0.15'/%3E%3Cline x1='20' y1='20' x2='50' y2='50' stroke='white' stroke-width='1' opacity='0.15'/%3E%3Cline x1='80' y1='20' x2='50' y2='50' stroke='white' stroke-width='1' opacity='0.15'/%3E%3Cline x1='20' y1='80' x2='50' y2='50' stroke='white' stroke-width='1' opacity='0.15'/%3E%3Cline x1='80' y1='80' x2='50' y2='50' stroke='white' stroke-width='1' opacity='0.15'/%3E%3C/svg%3E");
+
+  --pattern-fuchsia: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 50 Q60 30 80 25 Q70 45 75 65 Q55 60 50 50' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Cpath d='M50 50 Q40 70 20 75 Q30 55 25 35 Q45 40 50 50' fill='none' stroke='white' stroke-width='1' opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='2' fill='white' opacity='0.25'/%3E%3C/svg%3E");
+
+  --pattern-diamond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 L70 50 L50 90 L30 50 Z' fill='none' stroke='white' stroke-width='1' opacity='0.18'/%3E%3Cpath d='M50 10 L30 50' fill='none' stroke='white' stroke-width='0.5' opacity='0.12'/%3E%3Cpath d='M50 10 L70 50' fill='none' stroke='white' stroke-width='0.5' opacity='0.12'/%3E%3Cpath d='M30 50 L50 90' fill='none' stroke='white' stroke-width='0.5' opacity='0.12'/%3E%3Cpath d='M70 50 L50 90' fill='none' stroke='white' stroke-width='0.5' opacity='0.12'/%3E%3Cpath d='M50 30 L60 50 L50 70 L40 50 Z' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cline x1='30' y1='50' x2='70' y2='50' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3C/svg%3E");
+
+  --pattern-onyx: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M0 4 Q25 2 50 4 T100 4' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 11 Q25 8 50 11 T100 11' fill='none' stroke='%23ef4444' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 18 Q25 14 50 18 T100 18' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 25 Q25 20 50 25 T100 25' fill='none' stroke='%23f97316' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 32 Q25 26 50 32 T100 32' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 39 Q25 32 50 39 T100 39' fill='none' stroke='%23eab308' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 46 Q25 38 50 46 T100 46' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 53 Q25 45 50 53 T100 53' fill='none' stroke='%2322c55e' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 60 Q25 53 50 60 T100 60' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 67 Q25 61 50 67 T100 67' fill='none' stroke='%233b82f6' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 74 Q25 69 50 74 T100 74' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 81 Q25 77 50 81 T100 81' fill='none' stroke='%23a855f7' stroke-width='1.5' opacity='0.08'/%3E%3Cpath d='M0 88 Q25 85 50 88 T100 88' fill='none' stroke='white' stroke-width='0.5' opacity='0.1'/%3E%3Cpath d='M0 95 Q25 93 50 95 T100 95' fill='none' stroke='%23ec4899' stroke-width='1.5' opacity='0.08'/%3E%3C/svg%3E");
+
+  /* ---- Suite-Aspect Patterns (alias upstream Suite 1/4/5/6 motifs) ---- */
+  --pattern-maroon: var(--pattern-red);
+  --pattern-viridian: var(--pattern-green);
+  --pattern-cobalt: var(--pattern-blue);
+  --pattern-amethyst: var(--pattern-purple);
+}
+
+/* ============================================================
+ * Base body / html reset
+ * ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-board-dark);
+  color: var(--color-white-conductor);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app,
+#island-wrapper {
+  min-height: 100vh;
+}
+
+/* ============================================================
+ * STANDARD MUXON LEGIBILITY SHADOW
+ *
+ * The Muxon render mode (the chromatic-curvature branding shader · the default)
+ * fringes text and hurts legibility. When Muxon is the active mode, the root
+ * carries data-render-mode="muxon" (set reactively in IslandWrapper.vue). This
+ * applies a subtle white legibility shadow to general SCP body text so it stands
+ * crisp against the chromatic shader.
+ *
+ * text-shadow inherits — this is a broad container rule. Elements that set their
+ * own text-shadow (the neon headings, the D4 per-pane integration shadows)
+ * override it naturally; they already glow and stay legible.
+ * ============================================================ */
+
+[data-render-mode="muxon"] body {
+  text-shadow: 0.5px 0.5px 0 #fff;
+}
+
+/* ============================================================
+ * WAVE 2 · Pane / Border / Divider Classes (D3 + D5 + D8)
+ *
+ * D3 Pane Gradient Assembly: radial-gradient @ 87.5% 12.5% (top-right light source)
+ *                            color → fade @ 88%
+ * D5 Embossed Border:        dark top/right, light bottom/left (lit from top-left)
+ *                            box-shadow -3px 3px 0 for hard depth offset
+ * D8 Utility:                .suite-hr · .spectrum-bar · .hifi-stamp (OSPD inner)
+ *
+ * Inherited text-shadow uses complementary hue (D4 per-pane integration).
+ * ============================================================ */
+
+.hifi-pane-base {
+  background-image:
+    var(--pattern-base),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-diamond) 0%, var(--fade-base) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-base-dark);
+  border-right: 2px solid var(--color-base-dark);
+  border-bottom: 2px solid var(--color-base-light);
+  border-left: 2px solid var(--color-base-light);
+  box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.4);
+  text-shadow: 0.5px 0.5px 0 rgba(200, 170, 120, 0.7);
+}
+
+.hifi-pane-red {
+  background-image:
+    var(--pattern-red),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-red) 0%, var(--fade-red) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-red-dark);
+  border-right: 2px solid var(--color-red-dark);
+  border-bottom: 2px solid var(--color-red-light);
+  border-left: 2px solid var(--color-red-light);
+  box-shadow: -3px 3px 0 var(--shadow-red);
+  text-shadow: 0.5px 0.5px 0 rgba(68, 239, 239, 0.7);
+}
+
+.hifi-pane-orange {
+  background-image:
+    var(--pattern-orange),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-orange) 0%, var(--fade-orange) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-orange-dark);
+  border-right: 2px solid var(--color-orange-dark);
+  border-bottom: 2px solid var(--color-orange-light);
+  border-left: 2px solid var(--color-orange-light);
+  box-shadow: -3px 3px 0 var(--shadow-orange);
+  text-shadow: 0.5px 0.5px 0 rgba(22, 156, 249, 0.7);
+}
+
+.hifi-pane-yellow {
+  background-image:
+    var(--pattern-yellow),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-yellow) 0%, var(--fade-yellow) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-yellow-dark);
+  border-right: 2px solid var(--color-yellow-dark);
+  border-bottom: 2px solid var(--color-yellow-light);
+  border-left: 2px solid var(--color-yellow-light);
+  box-shadow: -3px 3px 0 var(--shadow-yellow);
+  text-shadow: 0.5px 0.5px 0 rgba(8, 63, 234, 0.7);
+}
+
+.hifi-pane-green {
+  background-image:
+    var(--pattern-green),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-green) 0%, var(--fade-green) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-green-dark);
+  border-right: 2px solid var(--color-green-dark);
+  border-bottom: 2px solid var(--color-green-light);
+  border-left: 2px solid var(--color-green-light);
+  box-shadow: -3px 3px 0 var(--shadow-green);
+  text-shadow: 0.5px 0.5px 0 rgba(197, 34, 137, 0.7);
+}
+
+.hifi-pane-blue {
+  background-image:
+    var(--pattern-blue),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-blue) 0%, var(--fade-blue) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-blue-dark);
+  border-right: 2px solid var(--color-blue-dark);
+  border-bottom: 2px solid var(--color-blue-light);
+  border-left: 2px solid var(--color-blue-light);
+  box-shadow: -3px 3px 0 var(--shadow-blue);
+  text-shadow: 0.5px 0.5px 0 rgba(246, 175, 59, 0.7);
+}
+
+.hifi-pane-purple {
+  background-image:
+    var(--pattern-purple),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-purple) 0%, var(--fade-purple) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-purple-dark);
+  border-right: 2px solid var(--color-purple-dark);
+  border-bottom: 2px solid var(--color-purple-light);
+  border-left: 2px solid var(--color-purple-light);
+  box-shadow: -3px 3px 0 var(--shadow-purple);
+  text-shadow: 0.5px 0.5px 0 rgba(164, 247, 85, 0.7);
+}
+
+.hifi-pane-fuchsia {
+  background-image:
+    var(--pattern-fuchsia),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-fuchsia) 0%, var(--fade-fuchsia) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-fuchsia-dark);
+  border-right: 2px solid var(--color-fuchsia-dark);
+  border-bottom: 2px solid var(--color-fuchsia-light);
+  border-left: 2px solid var(--color-fuchsia-light);
+  box-shadow: -3px 3px 0 var(--shadow-fuchsia);
+  text-shadow: 0.5px 0.5px 0 rgba(72, 236, 155, 0.7);
+}
+
+/* ---- Suite-Aspect Panes (Maroon · Viridian · Cobalt · Amethyst) ---- */
+/* D3 Pane Gradient Assembly per Pewter Tessera Skill.md L162-179 */
+
+.hifi-pane-maroon {
+  background-image:
+    var(--pattern-maroon),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-maroon) 0%, var(--fade-maroon) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-maroon-dark);
+  border-right: 2px solid var(--color-maroon-dark);
+  border-bottom: 2px solid var(--color-maroon-light);
+  border-left: 2px solid var(--color-maroon-light);
+  box-shadow: -3px 3px 0 var(--shadow-maroon);
+  text-shadow: 0.5px 0.5px 0 rgba(96, 237, 219, 0.7);
+}
+
+.hifi-pane-viridian {
+  background-image:
+    var(--pattern-viridian),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-viridian) 0%, var(--fade-viridian) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-viridian-dark);
+  border-right: 2px solid var(--color-viridian-dark);
+  border-bottom: 2px solid var(--color-viridian-light);
+  border-left: 2px solid var(--color-viridian-light);
+  box-shadow: -3px 3px 0 var(--shadow-viridian);
+  text-shadow: 0.5px 0.5px 0 rgba(189, 16, 72, 0.7);
+}
+
+.hifi-pane-cobalt {
+  background-image:
+    var(--pattern-cobalt),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-cobalt) 0%, var(--fade-cobalt) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-cobalt-dark);
+  border-right: 2px solid var(--color-cobalt-dark);
+  border-bottom: 2px solid var(--color-cobalt-light);
+  border-left: 2px solid var(--color-cobalt-light);
+  box-shadow: -3px 3px 0 var(--shadow-cobalt);
+  text-shadow: 0.5px 0.5px 0 rgba(235, 173, 37, 0.7);
+}
+
+.hifi-pane-amethyst {
+  background-image:
+    var(--pattern-amethyst),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-amethyst) 0%, var(--fade-amethyst) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-amethyst-dark);
+  border-right: 2px solid var(--color-amethyst-dark);
+  border-bottom: 2px solid var(--color-amethyst-light);
+  border-left: 2px solid var(--color-amethyst-light);
+  box-shadow: -3px 3px 0 var(--shadow-amethyst);
+  text-shadow: 0.5px 0.5px 0 rgba(138, 234, 51, 0.7);
+}
+
+.hifi-pane-diamond {
+  background-image:
+    var(--pattern-diamond),
+    linear-gradient(135deg,
+      rgba(239, 68, 68, 0.06) 0%,
+      rgba(249, 115, 22, 0.06) 15%,
+      rgba(234, 179, 8, 0.06) 28%,
+      rgba(34, 197, 94, 0.06) 42%,
+      rgba(59, 130, 246, 0.06) 57%,
+      rgba(168, 85, 247, 0.06) 72%,
+      rgba(236, 72, 153, 0.06) 85%,
+      var(--fade-diamond) 100%
+    );
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-diamond-dark);
+  border-right: 2px solid var(--color-diamond-dark);
+  border-bottom: 2px solid var(--color-diamond-light);
+  border-left: 2px solid var(--color-diamond-light);
+  box-shadow: -3px 3px 0 var(--shadow-diamond);
+  text-shadow: 0.5px 0.5px 0 rgba(180, 160, 120, 0.7);
+}
+
+.hifi-pane-onyx {
+  background-image:
+    var(--pattern-onyx),
+    repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 8px,
+      rgba(20, 20, 24, 0.35) 8px,
+      rgba(24, 24, 28, 0.35) 16px
+    ),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-onyx) 0%, var(--fade-onyx) 88%);
+  background-size: 50px 50px, auto, 100% 100%;
+  background-repeat: repeat, repeat, no-repeat;
+  border-top: 2px solid var(--color-onyx-dark);
+  border-right: 2px solid var(--color-onyx-dark);
+  border-bottom: 2px solid var(--color-onyx-light);
+  border-left: 2px solid var(--color-onyx-light);
+  box-shadow: -3px 3px 0 var(--shadow-onyx);
+  text-shadow: 0.5px 0.5px 0 rgba(200, 200, 210, 0.5);
+}
+
+/* ---- Embossed Border Utilities (D5 standalone, when no pane fill required) ---- */
+.hifi-embossed-base    { border-top: 2px solid var(--color-base-dark);    border-right: 2px solid var(--color-base-dark);    border-bottom: 2px solid var(--color-base-light);    border-left: 2px solid var(--color-base-light); }
+.hifi-embossed-red     { border-top: 2px solid var(--color-red-dark);     border-right: 2px solid var(--color-red-dark);     border-bottom: 2px solid var(--color-red-light);     border-left: 2px solid var(--color-red-light); }
+.hifi-embossed-orange  { border-top: 2px solid var(--color-orange-dark);  border-right: 2px solid var(--color-orange-dark);  border-bottom: 2px solid var(--color-orange-light);  border-left: 2px solid var(--color-orange-light); }
+.hifi-embossed-yellow  { border-top: 2px solid var(--color-yellow-dark);  border-right: 2px solid var(--color-yellow-dark);  border-bottom: 2px solid var(--color-yellow-light);  border-left: 2px solid var(--color-yellow-light); }
+.hifi-embossed-green   { border-top: 2px solid var(--color-green-dark);   border-right: 2px solid var(--color-green-dark);   border-bottom: 2px solid var(--color-green-light);   border-left: 2px solid var(--color-green-light); }
+.hifi-embossed-blue    { border-top: 2px solid var(--color-blue-dark);    border-right: 2px solid var(--color-blue-dark);    border-bottom: 2px solid var(--color-blue-light);    border-left: 2px solid var(--color-blue-light); }
+.hifi-embossed-purple  { border-top: 2px solid var(--color-purple-dark);  border-right: 2px solid var(--color-purple-dark);  border-bottom: 2px solid var(--color-purple-light);  border-left: 2px solid var(--color-purple-light); }
+.hifi-embossed-fuchsia { border-top: 2px solid var(--color-fuchsia-dark); border-right: 2px solid var(--color-fuchsia-dark); border-bottom: 2px solid var(--color-fuchsia-light); border-left: 2px solid var(--color-fuchsia-light); }
+
+/* ---- OSPD Obsidian-Stamped Inner Pane ----
+   Place inside any .hifi-pane-{suite} wrapper to create the two-layer depth
+   pattern: outer suite-color gradient + inner Obsidian-dark embossed stamp.
+   Mirrors SCP_ORIGIN SCSReleaseSection.vue release-stamp doctrine. */
+.hifi-stamp {
+  background: rgba(13, 13, 15, 0.85);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border-top: 2px solid rgba(255, 255, 255, 0.08);
+  border-right: 2px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.5);
+  border-left: 2px solid rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45);
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.hifi-stamp-red    { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-red); }
+.hifi-stamp-orange { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-orange); }
+.hifi-stamp-yellow { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-yellow); }
+.hifi-stamp-green  { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-green); }
+.hifi-stamp-blue   { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-blue); }
+.hifi-stamp-purple { box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-purple); }
+.hifi-stamp-fuchsia{ box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--shadow-fuchsia); }
+
+/* ---- D8 Utility: Suite HR (Rainbow Spectrum Divider) ---- */
+.suite-hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-red) 15%,
+    var(--color-orange) 28%,
+    var(--color-yellow) 42%,
+    var(--color-green) 56%,
+    var(--color-blue) 70%,
+    var(--color-purple) 85%,
+    transparent 100%
+  );
+  opacity: 0.5;
+  margin: 0;
+}
+
+/* ---- D8 Utility: Spectrum Bar (Full-Width 8-Color Band) ---- */
+.spectrum-bar {
+  display: flex;
+  height: 2px;
+  width: 100%;
+  opacity: 0.85;
+}
+
+.spectrum-bar span {
+  flex: 1;
+  height: 100%;
+}
+
+.spectrum-bar--red    { background: var(--color-red); }
+.spectrum-bar--orange { background: var(--color-orange); }
+.spectrum-bar--yellow { background: var(--color-yellow); }
+.spectrum-bar--green  { background: var(--color-green); }
+.spectrum-bar--blue   { background: var(--color-blue); }
+.spectrum-bar--purple { background: var(--color-purple); }
+.spectrum-bar--fuchsia{ background: var(--color-fuchsia); }
+
+/* ---- D8 Utility: Carbon Fiber Background ---- */
+.carbon-fiber {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 10px,
+    #0f0f0f 10px,
+    #111 20px
+  );
+  background-color: var(--color-board-dark);
+}
+
+/* ============================================================
+ * WAVE 3 · Buttons + Typography + Spectrum Text (D6 + D7)
+ *
+ * D6 Typography: Orbitron heading · Inter body · Space Mono code
+ *                .hifi-heading · .hifi-label · .spectrum-text
+ * D7 Button:     state matrix default/hover/active per suite
+ *                hover shrink + reduced shadow · active border inversion
+ * D4 Shadow utility: per-suite complementary text-shadow classes
+ * ============================================================ */
+
+.hifi-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-transform: uppercase;
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  color: white;
+  /* C598 · THE PEWTER BASE (the white-pill class · #648): the bare .hifi-btn carried NO
+     background-color — variant-less buttons fell to the OSR's native white under white text.
+     The dark glass base cures the whole family; variant background-image layers sit on top. */
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(12, 16, 26, 0.88);
+  border: 1px solid rgba(230, 226, 218, 0.28);
+}
+
+.hifi-btn:hover {
+  transform: scale(0.96);
+}
+
+.hifi-btn:disabled,
+.hifi-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  transform: none;
+}
+
+.hifi-btn-base {
+  background-image:
+    var(--pattern-base),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-diamond) 0%, var(--fade-base) 88%);
+  border-top: 2px solid var(--color-base-dark);
+  border-right: 2px solid var(--color-base-dark);
+  border-bottom: 2px solid var(--color-base-light);
+  border-left: 2px solid var(--color-base-light);
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.4);
+}
+.hifi-btn-base:hover    { box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.3); }
+.hifi-btn-base:active   { border-top: 2px solid var(--color-base-light); border-right: 2px solid var(--color-base-light); border-bottom: 2px solid var(--color-base-dark); border-left: 2px solid var(--color-base-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-red {
+  background-image:
+    var(--pattern-red),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-red) 0%, var(--fade-red) 88%);
+  border-top: 2px solid var(--color-red-dark);
+  border-right: 2px solid var(--color-red-dark);
+  border-bottom: 2px solid var(--color-red-light);
+  border-left: 2px solid var(--color-red-light);
+  box-shadow: -2px 2px 6px var(--shadow-red);
+}
+.hifi-btn-red:hover  { box-shadow: -1px 1px 4px var(--shadow-red); }
+.hifi-btn-red:active { border-top: 2px solid var(--color-red-light); border-right: 2px solid var(--color-red-light); border-bottom: 2px solid var(--color-red-dark); border-left: 2px solid var(--color-red-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-orange {
+  background-image:
+    var(--pattern-orange),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-orange) 0%, var(--fade-orange) 88%);
+  border-top: 2px solid var(--color-orange-dark);
+  border-right: 2px solid var(--color-orange-dark);
+  border-bottom: 2px solid var(--color-orange-light);
+  border-left: 2px solid var(--color-orange-light);
+  box-shadow: -2px 2px 6px var(--shadow-orange);
+}
+.hifi-btn-orange:hover  { box-shadow: -1px 1px 4px var(--shadow-orange); }
+.hifi-btn-orange:active { border-top: 2px solid var(--color-orange-light); border-right: 2px solid var(--color-orange-light); border-bottom: 2px solid var(--color-orange-dark); border-left: 2px solid var(--color-orange-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-yellow {
+  background-image:
+    var(--pattern-yellow),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-yellow) 0%, var(--fade-yellow) 88%);
+  border-top: 2px solid var(--color-yellow-dark);
+  border-right: 2px solid var(--color-yellow-dark);
+  border-bottom: 2px solid var(--color-yellow-light);
+  border-left: 2px solid var(--color-yellow-light);
+  box-shadow: -2px 2px 6px var(--shadow-yellow);
+}
+.hifi-btn-yellow:hover  { box-shadow: -1px 1px 4px var(--shadow-yellow); }
+.hifi-btn-yellow:active { border-top: 2px solid var(--color-yellow-light); border-right: 2px solid var(--color-yellow-light); border-bottom: 2px solid var(--color-yellow-dark); border-left: 2px solid var(--color-yellow-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-green {
+  background-image:
+    var(--pattern-green),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-green) 0%, var(--fade-green) 88%);
+  border-top: 2px solid var(--color-green-dark);
+  border-right: 2px solid var(--color-green-dark);
+  border-bottom: 2px solid var(--color-green-light);
+  border-left: 2px solid var(--color-green-light);
+  box-shadow: -2px 2px 6px var(--shadow-green);
+}
+.hifi-btn-green:hover  { box-shadow: -1px 1px 4px var(--shadow-green); }
+.hifi-btn-green:active { border-top: 2px solid var(--color-green-light); border-right: 2px solid var(--color-green-light); border-bottom: 2px solid var(--color-green-dark); border-left: 2px solid var(--color-green-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-blue {
+  background-image:
+    var(--pattern-blue),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-blue) 0%, var(--fade-blue) 88%);
+  border-top: 2px solid var(--color-blue-dark);
+  border-right: 2px solid var(--color-blue-dark);
+  border-bottom: 2px solid var(--color-blue-light);
+  border-left: 2px solid var(--color-blue-light);
+  box-shadow: -2px 2px 6px var(--shadow-blue);
+}
+.hifi-btn-blue:hover  { box-shadow: -1px 1px 4px var(--shadow-blue); }
+.hifi-btn-blue:active { border-top: 2px solid var(--color-blue-light); border-right: 2px solid var(--color-blue-light); border-bottom: 2px solid var(--color-blue-dark); border-left: 2px solid var(--color-blue-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-purple {
+  background-image:
+    var(--pattern-purple),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-purple) 0%, var(--fade-purple) 88%);
+  border-top: 2px solid var(--color-purple-dark);
+  border-right: 2px solid var(--color-purple-dark);
+  border-bottom: 2px solid var(--color-purple-light);
+  border-left: 2px solid var(--color-purple-light);
+  box-shadow: -2px 2px 6px var(--shadow-purple);
+}
+.hifi-btn-purple:hover  { box-shadow: -1px 1px 4px var(--shadow-purple); }
+.hifi-btn-purple:active { border-top: 2px solid var(--color-purple-light); border-right: 2px solid var(--color-purple-light); border-bottom: 2px solid var(--color-purple-dark); border-left: 2px solid var(--color-purple-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-fuchsia {
+  background-image:
+    var(--pattern-fuchsia),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-fuchsia) 0%, var(--fade-fuchsia) 88%);
+  border-top: 2px solid var(--color-fuchsia-dark);
+  border-right: 2px solid var(--color-fuchsia-dark);
+  border-bottom: 2px solid var(--color-fuchsia-light);
+  border-left: 2px solid var(--color-fuchsia-light);
+  box-shadow: -2px 2px 6px var(--shadow-fuchsia);
+}
+.hifi-btn-fuchsia:hover  { box-shadow: -1px 1px 4px var(--shadow-fuchsia); }
+.hifi-btn-fuchsia:active { border-top: 2px solid var(--color-fuchsia-light); border-right: 2px solid var(--color-fuchsia-light); border-bottom: 2px solid var(--color-fuchsia-dark); border-left: 2px solid var(--color-fuchsia-dark); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+.hifi-btn-transparent {
+  background: transparent;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  border-right: 2px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.2);
+}
+.hifi-btn-transparent:hover  { box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.2); }
+.hifi-btn-transparent:active { border-top: 2px solid rgba(255, 255, 255, 0.15); border-right: 2px solid rgba(255, 255, 255, 0.15); border-bottom: 2px solid rgba(255, 255, 255, 0.25); border-left: 2px solid rgba(255, 255, 255, 0.25); box-shadow: 0 0 2px inset rgba(0,0,0,0.5); }
+
+/* ---- D6 Typography: Heading + Label classes ---- */
+.hifi-heading {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hifi-label {
+  font-family: 'Space Mono', monospace;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+.hifi-mono {
+  font-family: var(--font-mono);
+}
+
+/* ---- D1 + D6: Spectrum-Text Utility ----
+   Linear gradient across all suite colors, clipped to text bounds. */
+.spectrum-text {
+  background: linear-gradient(90deg,
+    var(--color-red) 0%,
+    var(--color-orange) 16%,
+    var(--color-yellow) 32%,
+    var(--color-green) 48%,
+    var(--color-blue) 64%,
+    var(--color-purple) 80%,
+    var(--color-fuchsia) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ---- D4: Per-Suite Complementary Text Shadow Utilities ----
+   Each suite's complement (color-wheel opposite) at 0.7 alpha, 0.5/0.5 offset.
+   Apply to text rendered over a hifi-pane-{suite} for crisp readability. */
+.text-shadow-base    { text-shadow: 0.5px 0.5px 0 rgba(200, 170, 120, 0.7); }
+.text-shadow-red     { text-shadow: 0.5px 0.5px 0 rgba(68, 239, 239, 0.7); }
+.text-shadow-orange  { text-shadow: 0.5px 0.5px 0 rgba(22, 156, 249, 0.7); }
+.text-shadow-yellow  { text-shadow: 0.5px 0.5px 0 rgba(8, 63, 234, 0.7); }
+.text-shadow-green   { text-shadow: 0.5px 0.5px 0 rgba(197, 34, 137, 0.7); }
+.text-shadow-blue    { text-shadow: 0.5px 0.5px 0 rgba(246, 175, 59, 0.7); }
+.text-shadow-purple  { text-shadow: 0.5px 0.5px 0 rgba(164, 247, 85, 0.7); }
+.text-shadow-fuchsia { text-shadow: 0.5px 0.5px 0 rgba(72, 236, 155, 0.7); }
+
+/* ---- TaskBar: Fixed-Bottom Universal Toolbar (Cycle 158 R5 fix) ----
+   E8 mitigation · Shell-level scoped CSS does NOT extract into island client
+   bundle · positioning rules MUST live in global style.css to ship.
+   SCP_ORIGIN canonical pattern: TaskBar.vue:160 root <div> fixed bottom-0. */
+.scs-taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 110;
+  height: 56px;
+  background: rgba(8, 10, 16, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: auto;
+}
+
+.scs-taskbar .taskbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  gap: 16px;
+}
+
+.scs-taskbar .taskbar-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scs-taskbar .taskbar-zone--center {
+  flex: 1;
+  justify-content: center;
+}
+
+.scs-taskbar .taskbar-zone--left,
+.scs-taskbar .taskbar-zone--right {
+  flex-shrink: 0;
+}
+
+/* ---- TaskBar Fallback Button (.taskbar-btn) — Cycle 158 R6 E8b mitigation ----
+   Used for any toolbar button whose componentName has NO entry in Shell.vue
+   taskBarComponentMap (e.g. 'send-message' currently). Migrated from
+   TaskBar.vue scoped CSS — global delivery required for Shell-tree components. */
+.taskbar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-white-conductor, #f0f0f0);
+}
+
+.taskbar-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.taskbar-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.taskbar-btn-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, 'Space Mono', monospace);
+  font-size: 9px;
+  font-weight: bold;
+  background: rgba(20, 10, 25, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---- Turn Over Button (.turn-over-btn) — Cycle 158 R7 Pewter recipe ----
+   Round 33px (1/4 smaller than prior 44px · user-directed) · D3 fuchsia pattern
+   + radial-gradient · D5 embossed border · D4 spring-green complement text-shadow.
+   The "round" geometry is INTENTIONAL per user — Turn Over functionality. */
+.turn-over-btn {
+  position: relative;
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--fade-fuchsia, #230b17);
+  background-image:
+    var(--pattern-fuchsia),
+    radial-gradient(ellipse at 87.5% 12.5%, var(--color-fuchsia) 0%, var(--fade-fuchsia) 88%);
+  background-size: 30px 30px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid var(--color-fuchsia-dark);
+  border-right: 2px solid var(--color-fuchsia-dark);
+  border-bottom: 2px solid var(--color-fuchsia-light);
+  border-left: 2px solid var(--color-fuchsia-light);
+  box-shadow: -3px 3px 0 var(--shadow-fuchsia);
+  text-shadow: 0.5px 0.5px 0 rgba(72, 236, 155, 0.7);
+}
+
+.turn-over-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: -2px 2px 0 var(--shadow-fuchsia);
+}
+
+.turn-over-btn:active {
+  border-top: 2px solid var(--color-fuchsia-light);
+  border-right: 2px solid var(--color-fuchsia-light);
+  border-bottom: 2px solid var(--color-fuchsia-dark);
+  border-left: 2px solid var(--color-fuchsia-dark);
+  box-shadow: 0 0 2px inset var(--shadow-fuchsia);
+  transform: translate(1px, -1px);
+}
+
+.turn-over-btn.armed {
+  background-image:
+    var(--pattern-fuchsia),
+    radial-gradient(ellipse at 87.5% 12.5%, #f97316 0%, #1a0f08 88%);
+  color: #1a0f08;
+  border-top: 2px solid #c2410c;
+  border-right: 2px solid #c2410c;
+  border-bottom: 2px solid #fdba74;
+  border-left: 2px solid #fdba74;
+  box-shadow: -3px 3px 0 rgba(194, 65, 12, 0.55);
+  text-shadow: 0.5px 0.5px 0 rgba(30, 144, 200, 0.7);
+  animation: armed-pulse 1.2s ease-in-out infinite;
+}
+
+.turn-over-btn.armed:hover {
+  filter: brightness(1.06);
+}
+
+@keyframes armed-pulse {
+  0%, 100% { box-shadow: -3px 3px 0 rgba(194, 65, 12, 0.55); }
+  50%      { box-shadow: -3px 3px 8px rgba(249, 115, 22, 0.75); }
+}
+
+.turn-over-btn .spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* BOOT-STREAM · THE ESCALATING PULSE MIRROR (user design): while the standby overlay counts a
+   stalling turn-over, its stall interval writes body[data-standby-pulse]="1".."4" every 15s. The
+   LIVE toolbar's Turn Over A (the escape hatch) escalates its viridian edge in lockstep — a
+   growing "revert now" pull. Global on the class beats the SFC-scoped base (specificity 0,2,1 >
+   0,2,0), so it lifts the button's own neon ring without restyling it. */
+body[data-standby-pulse="1"] .turn-over-a-btn:not(.disabled) {
+  border-color: rgba(19, 213, 148, 0.75);
+  box-shadow:
+    0 0 12px 1px rgba(19, 213, 148, 0.4),
+    inset 0 0 12px 0 rgba(19, 213, 148, 0.14);
+}
+body[data-standby-pulse="2"] .turn-over-a-btn:not(.disabled) {
+  border-color: rgba(19, 213, 148, 0.9);
+  box-shadow:
+    0 0 16px 2px rgba(19, 213, 148, 0.55),
+    inset 0 0 14px 0 rgba(19, 213, 148, 0.2);
+  transform: scale(1.04);
+}
+body[data-standby-pulse="3"] .turn-over-a-btn:not(.disabled) {
+  border-color: rgb(110, 245, 200);
+  color: rgb(150, 250, 215);
+  box-shadow:
+    0 0 22px 3px rgba(19, 213, 148, 0.7),
+    inset 0 0 18px 1px rgba(19, 213, 148, 0.28);
+  transform: scale(1.08);
+}
+body[data-standby-pulse="4"] .turn-over-a-btn:not(.disabled) {
+  border-color: rgb(150, 250, 215);
+  color: rgb(190, 255, 230);
+  box-shadow:
+    0 0 30px 5px rgba(19, 213, 148, 0.85),
+    0 0 52px 8px rgba(19, 213, 148, 0.45),
+    inset 0 0 22px 2px rgba(19, 213, 148, 0.35);
+  transform: scale(1.12);
+  animation: turn-over-a-pulse-4 1.4s ease-in-out infinite;
+}
+@keyframes turn-over-a-pulse-4 {
+  0%, 100% { box-shadow: 0 0 30px 5px rgba(19, 213, 148, 0.85), 0 0 52px 8px rgba(19, 213, 148, 0.45), inset 0 0 22px 2px rgba(19, 213, 148, 0.35); }
+  50%      { box-shadow: 0 0 40px 7px rgba(19, 213, 148, 1), 0 0 68px 12px rgba(19, 213, 148, 0.6), inset 0 0 28px 3px rgba(19, 213, 148, 0.45); }
+}
+
+.turn-over-btn .pending-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #1a0f1a;
+  color: #ec8af5;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d946ef;
+  box-shadow: -1px 1px 0 rgba(168, 51, 189, 0.6);
+}
+
+/* ---- Sessions Button (.sessions-btn) — Cycle 158 R7 Tailwind-pill recipe ----
+   Horizontal pill with icon + text label (NOT circular per R6 reversion).
+   Subtle text/60 default · hover brightens text + adds white/5 bg.
+   Maps Tailwind: flex items-center gap-2 px-3 py-2 rounded-lg text-xs
+                  transition-all duration-200 whitespace-nowrap flex-shrink-0
+                  text-white/60 hover:text-white hover:bg-white/5 */
+/* THE HALFWAY-TO-STRATIPUNK BUTTON (user C537→C538: 'More Neon, Closer to StratiPUNK'):
+   HiFi keeps the STRUCTURE — the D5 embossed split border, INVERTED on active, over the pane
+   wash. StratiPUNK now carries the VOLTAGE — neon amber (255,191,96), the offset-hard shadow
+   near full punch (-2.5px 2.5px 0), glowing borders + label. Re-landed C543 from afc82bb3. */
+.sessions-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: radial-gradient(ellipse at 87.5% 12.5%, rgba(255, 191, 96, 0.16) 0%, rgba(10, 13, 20, 0.7) 88%);
+  /* THE CENTERED BORDER (user C539) — uniform neon on all four sides; the split emboss retires. */
+  border: 1px solid rgba(255, 191, 96, 0.75);
+  box-shadow: -2.5px 2.5px 0 rgba(255, 191, 96, 0.35), 0 0 9px rgba(255, 170, 60, 0.28);
+  color: rgb(255, 214, 140);
+  text-shadow: 0 0 7px rgba(255, 180, 70, 0.65);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sessions-btn:hover {
+  color: rgb(255, 228, 170);
+  background: radial-gradient(ellipse at 87.5% 12.5%, rgba(255, 191, 96, 0.28) 0%, rgba(12, 16, 26, 0.75) 88%);
+  border-color: rgb(255, 191, 96);
+  box-shadow: -2.5px 2.5px 0 rgba(255, 191, 96, 0.55), 0 0 14px rgba(255, 170, 60, 0.5);
+  text-shadow: 0 0 9px rgba(255, 180, 70, 0.9);
+}
+
+.sessions-btn:active {
+  box-shadow: inset 0 0 10px rgba(255, 191, 96, 0.35);
+}
+
+.sessions-btn.active {
+  color: rgb(255, 228, 170);
+  background: radial-gradient(ellipse at 87.5% 12.5%, rgba(255, 191, 96, 0.32) 0%, rgba(12, 16, 26, 0.8) 88%);
+  /* Active — the centered border at full saturation (the inversion retires with the split). */
+  border: 1px solid rgb(255, 191, 96);
+  box-shadow: -2.5px 2.5px 0 rgba(255, 191, 96, 0.6), 0 0 16px rgba(255, 170, 60, 0.55);
+  text-shadow: 0 0 9px rgba(255, 180, 70, 0.9);
+}
+
+.sessions-btn-label {
+  letter-spacing: 0.02em;
+}
+
+.sessions-btn .sessions-badge {
+  margin-left: 0.25rem;
+  padding: 0 0.4rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, 'SF Mono', Monaco, monospace);
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* SWRM · SCP render mode · the CSS skin (html[data-scp-render-mode]) was PRUNED. SCP shading is
+   the REAL GLSL distortion via the Electron offscreen→presenter pipe, controlled through
+   bridge.json.scpRenderMode (mirrors the terminal renderMode pipe · applies to all SCPs). The
+   page's own CSS cannot reach the offscreen render, so control is Electron-side, not local. */
+
+/* ============================================================
+ * SCS INPUT FIELD · the Pewter pressed-inset register (#646 · S4 Green)
+ *
+ * The .scs-input-field + .scs-cursor-* + .is-mirrored field-identity rules have
+ * MOVED to ./concepts/vue/components/scsInputField.css (imported at the top of this
+ * file AND directly by ScsInput.vue / ScsTextarea.vue) so the component carries its
+ * own identity wherever it mounts. Single source of truth — edit the rules THERE.
+ * The Pewter input language (D5 embossed grammar INVERTED — field reads PRESSED;
+ * suite-keyed accent rides the single `--input-accent` var; UNSCOPED so the class
+ * crosses the SCS component boundary onto the inner <input>/<textarea> where
+ * getComputedStyle reads it) is documented in that file.
+ * Citation: SCS-INPUT-EXPORT-DIAGNOSTIC.md (A2-as-non-self-containment).
+ * ============================================================ */
+
+
+
+/* ===================================================================
+   THE PEWTER TESSERA CASCADE (C803 · inducted from the SCP_ORIGIN
+   canonical style.css · DIAMOND-RELEASE-CLOSURE §PEWTER TESSERA INDUCTED)
+   The updated HiFi core: the key family · the panel anatomy · the
+   subtext ground · the Mux pane family · transparent · locked · list ·
+   scrollbar · sectional-box · suite-hr. Ported VERBATIM — the ORIGIN
+   remains canonical; regenerate from it, never hand-drift.
+   =================================================================== */
+
+
+
+/* Transparent HiFi pane — the Suite 8 vessel. The 8th position is transparent:
+   made to be filled with the user's own conception, so the ground shows through.
+   Seeded from .hifi-btn-transparent (glass blur + the embossed HiFi border). */
+.hifi-pane-transparent {
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-top: 2px solid rgba(255, 255, 255, 0.22);
+  border-right: 2px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+
+
+/* Diamond (Ego · light gem) muxified with Onyx (Lambda · dark stone): light top -> dark bottom.
+   Pewter recursion via two layers (Suite 6 / WebSearch): the real Onyx tessera (::before) under a
+   masked Diamond tessera (::after) that fades to transparent, revealing the Onyx beneath. */
+.hifi-pane-diamond-onyx {
+  position: relative;
+  isolation: isolate;
+  background-color: rgb(8, 7, 11);
+  border-top: 2px solid rgb(232, 226, 248);
+  border-right: 2px solid var(--color-purple-dark);
+  border-bottom: 2px solid rgb(16, 12, 24);
+  border-left: 2px solid var(--color-purple-light);
+  box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+
+/* Onyx layer — bottom: rainbow wave tessera + diagonal hatch over near-black */
+.hifi-pane-diamond-onyx::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    var(--pattern-onyx),
+    repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(20, 20, 24, 0.35) 8px, rgba(24, 24, 28, 0.35) 16px),
+    radial-gradient(ellipse at 50% 92%, rgb(22, 18, 30) 0%, rgb(6, 6, 9) 90%);
+  background-size: 50px 50px, auto, 100% 100%;
+  background-repeat: repeat, repeat, no-repeat;
+}
+
+
+/* Diamond layer — top: light gem (facet lattice + faint rainbow iridescence), masked to fade into the Onyx */
+.hifi-pane-diamond-onyx::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image:
+    var(--pattern-diamond),
+    linear-gradient(135deg,
+      rgba(239, 68, 68, 0.08) 0%, rgba(249, 115, 22, 0.08) 15%, rgba(234, 179, 8, 0.08) 28%,
+      rgba(34, 197, 94, 0.08) 42%, rgba(59, 130, 246, 0.08) 57%, rgba(168, 85, 247, 0.08) 72%,
+      rgba(236, 72, 153, 0.08) 85%, transparent 100%),
+    linear-gradient(to bottom, rgb(210, 200, 236) 0%, rgb(160, 142, 202) 40%, rgba(120, 100, 170, 0.4) 70%, transparent 88%);
+  background-size: 30px 30px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 72%);
+  mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 72%);
+}
+
+
+/* lift pane content above both layers */
+.hifi-pane-diamond-onyx > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+
+/* ── MUX FAMILY — Ego anor Lambda at parity, rendered as a SPECTRUM of Diamond/Ego spotlight presence
+   (cf. diamond-onyx, retired — that was a top-down FADE, not a parity spotlight).
+   ALL THREE share the Onyx/Lambda GROUND (Axiom III: Lambda is Base — wave tessera everywhere +
+   bottom-right depth) and the anor SPLIT-PARITY border (light top+left = Ego / deep bottom+right =
+   Lambda). What VARIES is the Diamond spotlight — where it pools and how much it covers:
+     · mux-lambda — gem pooled in the TOP-LEFT corner; Onyx is the majority (Lambda-lean).
+     · mux        — gem spotlight at the MID POINT; balanced parity (the self, centered).
+     · mux-ego    — gem spotlight covers the MAJORITY; Onyx recedes to the corner (Ego-lean).
+   Maps the Three-Self lean: Lambda (Actionable) → Mux (parity) → Ego (Informative). */
+.hifi-pane-mux,
+.hifi-pane-mux-lambda,
+.hifi-pane-mux-ego {
+  position: relative;
+  isolation: isolate;
+  background-color: rgb(8, 7, 11);
+  background-image:
+    var(--pattern-onyx),
+    radial-gradient(135% 135% at 100% 100%, rgb(18, 14, 26) 0%, rgb(7, 6, 10) 40%, rgb(6, 6, 9) 66%);
+  background-size: 50px 50px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  border-top: 2px solid rgb(226, 220, 244);
+  border-left: 2px solid rgb(196, 190, 220);
+  border-bottom: 2px solid rgb(10, 9, 14);
+  border-right: 2px solid rgb(14, 12, 20);
+  box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(2, 2, 4, 0.6);
+}
+
+
+.hifi-pane-mux > *,
+.hifi-pane-mux-lambda > *,
+.hifi-pane-mux-ego > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+
+/* MUX-LAMBDA — gem pooled top-left corner; Onyx majority (Lambda-lean; = the original Mux).
+   ::before = gem color field + shared spectrum; ::after = facet lattice masked to the gem corner. */
+.hifi-pane-mux-lambda::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(135% 135% at 0% 0%, rgba(210, 202, 240, 0.34) 0%, rgba(150, 138, 198, 0.14) 27%, transparent 54%),
+    linear-gradient(135deg, rgba(239, 68, 68, 0.045) 0%, rgba(234, 179, 8, 0.045) 30%, rgba(34, 197, 94, 0.045) 50%, rgba(59, 130, 246, 0.045) 70%, rgba(168, 85, 247, 0.045) 100%);
+  background-repeat: no-repeat, no-repeat;
+}
+
+
+.hifi-pane-mux-lambda::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--pattern-diamond);
+  background-size: 30px 30px;
+  background-repeat: repeat;
+  opacity: 0.6;
+  -webkit-mask-image: radial-gradient(140% 140% at 0% 0%, black 0%, rgba(0, 0, 0, 0.5) 30%, transparent 56%);
+  mask-image: radial-gradient(140% 140% at 0% 0%, black 0%, rgba(0, 0, 0, 0.5) 30%, transparent 56%);
+}
+
+
+
+/* MUX — gem spotlight OFFSET toward the upper-left third (focal ~33% 42% — lands on the body's
+   mid phrase) reaching up into the upper-left corner; illuminates roughly the upper-left half,
+   fading to Onyx at the bottom-right. Balanced parity, aimed — not dead-center. */
+.hifi-pane-mux::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(100% 100% at 33% 42%, rgba(212, 204, 242, 0.36) 0%, rgba(154, 142, 202, 0.15) 32%, transparent 62%),
+    linear-gradient(135deg, rgba(239, 68, 68, 0.045) 0%, rgba(234, 179, 8, 0.045) 30%, rgba(34, 197, 94, 0.045) 50%, rgba(59, 130, 246, 0.045) 70%, rgba(168, 85, 247, 0.045) 100%);
+  background-repeat: no-repeat, no-repeat;
+}
+
+
+.hifi-pane-mux::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--pattern-diamond);
+  background-size: 30px 30px;
+  background-repeat: repeat;
+  opacity: 0.6;
+  -webkit-mask-image: radial-gradient(106% 106% at 33% 42%, black 0%, rgba(0, 0, 0, 0.5) 36%, transparent 64%);
+  mask-image: radial-gradient(106% 106% at 33% 42%, black 0%, rgba(0, 0, 0, 0.5) 36%, transparent 64%);
+}
+
+
+
+/* MUX-EGO — gem spotlight covers the MAJORITY; Onyx recedes to the bottom-right corner (Ego-lean). */
+.hifi-pane-mux-ego::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(150% 150% at 38% 32%, rgba(216, 208, 244, 0.42) 0%, rgba(178, 166, 216, 0.22) 36%, rgba(120, 108, 168, 0.08) 60%, transparent 84%),
+    linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(234, 179, 8, 0.05) 30%, rgba(34, 197, 94, 0.05) 50%, rgba(59, 130, 246, 0.05) 70%, rgba(168, 85, 247, 0.05) 100%);
+  background-repeat: no-repeat, no-repeat;
+}
+
+
+.hifi-pane-mux-ego::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--pattern-diamond);
+  background-size: 30px 30px;
+  background-repeat: repeat;
+  opacity: 0.62;
+  -webkit-mask-image: radial-gradient(155% 155% at 38% 32%, black 0%, rgba(0, 0, 0, 0.6) 50%, transparent 86%);
+  mask-image: radial-gradient(155% 155% at 38% 32%, black 0%, rgba(0, 0, 0, 0.6) 50%, transparent 86%);
+}
+
+
+
+/* ── HiFi FUNCTIONAL DESIGN — scannability primitives so panels aren't walls of text (today's
+   users SCAN). `.hifi-key{,-SUITE}
+
+` = inline scan-anchor; key terms are colored by the SUITE THEY
+   CORRESPOND TO, SYSTEM-WIDE — a concept keeps its color in every panel, independent of the panel's
+   own suite. `.hifi-list` = functional ◆ bullets (diamond marker; per-li suite tint via --mark).
+   LEGEND (concept → suite): red = halting/blocking/strike/error · orange = bounded emitter/admission ·
+   yellow = the general machine's limit / universality / the toll · green = composition / Mux / the self /
+   substrate / Muxium / Muxate · blue = priority action queue / tape / structure · purple = operation /
+   orchestration / firewall framing · fuchsia = Stratimux / dissolution / GitM / diagnosis ·
+   diamond = the Light / observation. */
+.hifi-key { color: rgba(255, 255, 255, 0.96); font-weight: 500; }
+
+
+.hifi-key-red { color: var(--color-red-light); font-weight: 500; }
+
+
+.hifi-key-orange { color: var(--color-orange-light); font-weight: 500; }
+
+
+.hifi-key-yellow { color: var(--color-yellow-light); font-weight: 500; }
+
+
+.hifi-key-green { color: var(--color-green-light); font-weight: 500; }
+
+
+.hifi-key-blue { color: var(--color-blue-light); font-weight: 500; }
+
+
+.hifi-key-purple { color: var(--color-purple-light); font-weight: 500; }
+
+
+.hifi-key-fuchsia { color: var(--color-fuchsia-light); font-weight: 500; }
+
+
+.hifi-key-diamond { color: rgb(214, 206, 240); font-weight: 500; }
+
+
+
+.hifi-list {
+  --mark: rgba(206, 198, 236, 0.85);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+
+.hifi-list > li {
+  position: relative;
+  padding-left: 1.45rem;
+  line-height: 1.55;
+}
+
+
+.hifi-list > li::before {
+  content: '\25C6';
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  font-size: 0.72em;
+  line-height: 1.7;
+  color: var(--mark);
+}
+
+
+
+/* TOGGLE PANEL — HiFi Base toolbar bracketing the top of a panel: title (window-title) on the
+   left, the A/B view toggle (window-controls) on the right. Body holds list/paragraph slot. */
+.hifi-panel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.hifi-panel-body {
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+
+
+
+/* MUX-EGO SUBTEXT GROUNDING — the inner content card of a suite-color panel rendered AS a Mux-Ego
+   pane (the HiFi Mux-Ego: Onyx ground + the Diamond/Ego gem spotlight covering the majority, focal
+   38% 32%, Ego-lean + diamond facet lattice masked to the gem + the faint shared spectrum), shaped
+   as a rounded INSET (30px / 28px per spec) so body statements read as light text on the dark gem-lit
+   Onyx instead of on the suite color. Gem/facet opacities are toned below the full pane so text stays
+   legible. The surrounding .hifi-panel-body padding is the inset gap from the card edge. Applied only
+   to Suite-COLOR panels (the transparent toolbar header, by contrast, applies to ANY header panel). */
+.hifi-subtext-ground {
+  position: relative;
+  isolation: isolate;
+  border-radius: 8px;
+  border-top: solid black;
+  border-right: solid rgb(172 172 172) 1.7px;
+  padding: 28px;
+  background-color: rgb(8, 7, 11);
+  background-image:
+    var(--pattern-onyx),
+    radial-gradient(135% 135% at 100% 100%, rgb(18, 14, 26) 0%, rgb(7, 6, 10) 40%, rgb(6, 6, 9) 66%);
+  background-size: 50px 50px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  box-shadow: inset 0 2px 9px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 2px rgba(2, 2, 4, 0.6);
+  color: var(--color-white-conductor);
+}
+
+
+.hifi-subtext-ground > * { position: relative; z-index: 2; }
+
+
+.hifi-subtext-ground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image:
+    radial-gradient(150% 150% at 38% 32%, rgba(216, 208, 244, 0.22) 0%, rgba(178, 166, 216, 0.11) 36%, rgba(120, 108, 168, 0.04) 60%, transparent 84%),
+    linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(234, 179, 8, 0.05) 30%, rgba(34, 197, 94, 0.05) 50%, rgba(59, 130, 246, 0.05) 70%, rgba(168, 85, 247, 0.05) 100%);
+  background-repeat: no-repeat, no-repeat;
+}
+
+
+.hifi-subtext-ground::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background-image: var(--pattern-diamond);
+  background-size: 30px 30px;
+  background-repeat: repeat;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(155% 155% at 38% 32%, black 0%, rgba(0, 0, 0, 0.6) 50%, transparent 86%);
+  mask-image: radial-gradient(155% 155% at 38% 32%, black 0%, rgba(0, 0, 0, 0.6) 50%, transparent 86%);
+}
+
+
+
+/* Panel body statements read as off-white (paragraph + list, any HiFiPanel body), lifting the dim
+   text-white/NN utilities used inside panels. HiFi highlighted terms (.hifi-key*) keep their suite
+   color — they are spans, and the :not() guard also spares any keyed p/li. Base text is already
+   off-white (body color: #f0f0f0), so out-of-panel copy needs nothing. */
+.hifi-panel-body :is(p, li):not([class*="hifi-key"]),
+.hifi-subtext-ground :is(p, li):not([class*="hifi-key"]),
+.hifi-subtext-glass :is(p, li):not([class*="hifi-key"]) {
+  color: var(--color-white-conductor);
+}
+
+
+
+/* GLASS subsection — the transparent counterpart of .hifi-subtext-ground. STYLE RULE: when a neutral/
+   Founder card is PAIRED with a HiFi Suite card whose body uses the Mux-Ego .hifi-subtext-ground, the
+   neutral card's body uses this glass subsection instead — same inset box model (8px radius, 28px pad,
+   off-white text) so the pair reads as siblings, but the surface is the Transparent Pane (glass blur +
+   embossed border) rather than dark Onyx + Ego gem. Not for standalone neutral cards. */
+.hifi-subtext-glass {
+  position: relative;
+  border-radius: 8px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-top: 2px solid rgba(255, 255, 255, 0.22);
+  border-right: 2px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.25);
+  color: var(--color-white-conductor);
+}
+
+
+
+.suite-hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-red) 15%,
+    var(--color-orange) 28%,
+    var(--color-yellow) 42%,
+    var(--color-green) 56%,
+    var(--color-blue) 70%,
+    var(--color-purple) 85%,
+    transparent 100%
+  );
+  opacity: 0.5;
+  margin: 0;
+}
+
+
+
+/* Base HiFi Sectional Box — black inset glossy obsidian (Pewter D3 surface +
+   D5 borders, INVERTED to read as recessed/pressed-in rather than raised).
+   The inner shadows sink it into the spacey base; ::before is the glass sheen. */
+.hifi-sectional-box {
+  position: relative;
+  background:
+    linear-gradient(168deg,
+      rgba(24, 24, 30, 0.92) 0%,
+      rgba(13, 13, 17, 0.95) 50%,
+      rgba(7, 7, 10, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top-color: rgba(0, 0, 0, 0.5);
+  border-left-color: rgba(0, 0, 0, 0.45);
+  border-radius: 0.75rem;
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.6),
+    inset 0 16px 28px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+
+.hifi-sectional-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.012) 28%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+
+.hifi-sectional-box > * {
+  position: relative;
+  z-index: 1;
+}
+
+
+
+.hifi-pane-locked {
+  filter: grayscale(1);
+  pointer-events: none;
+  user-select: none;
+  position: relative;
+}
+
+
+
+.hifi-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+
+.hifi-scrollbar::-webkit-scrollbar { width: 6px; }
+
+
+.hifi-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-right: 1px solid rgba(255,255,255,0.04);
+}
+
+
+.hifi-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+
+.hifi-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.15) 100%);
+  border-color: rgba(255,255,255,0.15);
+}
+
+
+/* THE HIFI SUITE HIGHLIGHTING · inline prose key phrases (C805 · the SCS system extension —
+   the ORIGIN expresses this idiom per-site via Tailwind text-[var(--color-*)]; the SCS
+   carries it as system classes so every SCP page highlights by the functional color law:
+   red=risk · orange=discovery · yellow=architecture/value · green=creation/validation ·
+   blue=core action · purple=orchestration · fuchsia=services/recovery · base=foundation). */
+.hifi-hl-red { color: var(--color-red-light, #fca5a5); text-shadow: 0 0 7px color-mix(in srgb, var(--color-red, #ef4444) 55%, transparent); }
+.hifi-hl-orange { color: var(--color-orange-light, #fdba74); text-shadow: 0 0 7px color-mix(in srgb, var(--color-orange, #f97316) 55%, transparent); }
+.hifi-hl-yellow { color: var(--color-yellow-light, #fde047); text-shadow: 0 0 7px color-mix(in srgb, var(--color-yellow, #eab308) 55%, transparent); }
+.hifi-hl-green { color: var(--color-green-light, #6ee7b7); text-shadow: 0 0 7px color-mix(in srgb, var(--color-green, #10b981) 55%, transparent); }
+.hifi-hl-blue { color: var(--color-blue-light, #93c5fd); text-shadow: 0 0 7px color-mix(in srgb, var(--color-blue, #3b82f6) 55%, transparent); }
+.hifi-hl-purple { color: var(--color-purple-light, #d8b4fe); text-shadow: 0 0 7px color-mix(in srgb, var(--color-purple, #a855f7) 55%, transparent); }
+.hifi-hl-fuchsia { color: var(--color-fuchsia-light, #f0abfc); text-shadow: 0 0 7px color-mix(in srgb, var(--color-fuchsia, #d946ef) 55%, transparent); }
+.hifi-hl-base { color: var(--color-white-conductor, #f5f2ea); text-shadow: 0 0 7px rgba(245, 242, 234, 0.45); font-weight: 600; }
+
+
+/* THE SCP MARK (C809 · the HiFi formalization of the term) — the letters ride the Cascade's
+   odd suites (S=1 red · C=3 yellow · P=5 blue); each letter's text-shadow ALTERNATES to the
+   NEXT suite in the sequence (2 orange · 4 green · 6 purple) — the whole rotation implied in
+   three letters. The Pewter precedent honored: the D4 per-suite complementary shadow vars
+   (--shadow-*) + the pewter offset-depth signature (-2px 2px 6px). */
+.hifi-scp-mark {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.hifi-scp-mark .scp-s {
+  color: var(--color-red-light, #fca5a5);
+  text-shadow: -2px 2px 6px var(--shadow-orange, rgba(212, 98, 19, 0.6));
+}
+
+.hifi-scp-mark .scp-c {
+  color: var(--color-yellow-light, #fde047);
+  text-shadow: -2px 2px 6px var(--shadow-green, rgba(29, 167, 80, 0.6));
+}
+
+.hifi-scp-mark .scp-p {
+  color: var(--color-blue-light, #93c5fd);
+  text-shadow: -2px 2px 6px var(--shadow-purple, rgba(143, 72, 210, 0.6));
+}

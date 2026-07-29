@@ -1,0 +1,15 @@
+{
+  "watch": [
+    ".bridge-restart.json"
+  ],
+  "ignore": [],
+  "exec": "npm run build:server && npm run build:client && npx ts-node ./src/index.ts --scp-tag=$PWD",
+  "spawn": true,
+  "signal": "SIGKILL",
+  "delay": "100",
+  "verbose": true,
+  "events": {
+    "restart": "pkill -9 -f \"scp-tag=$PWD\" 2>/dev/null || true; sleep 0.3; echo '[Bridge Restart] Process tree killed (scoped to this SCP)'",
+    "start": "echo '[Bridge Restart] Fresh process spawned'"
+  }
+}
