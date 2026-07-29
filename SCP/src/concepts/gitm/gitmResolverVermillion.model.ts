@@ -125,6 +125,14 @@ Step 3 (Simple Prompt) — Decide every entry (the apply quality lands these):
       - "patch"    → the apply quality applies "patch" (a unified-diff hunk) to the file. Use
                      this for "apply"-bucket files (the template moved · the user never touched
                      them). SOURCE the hunk: git -C <provenance.scpRepoRoot> diff <oursSha> <resultTree> -- <path>.
+                     THE VERBATIM LAW: the hunk must be the BYTE-EXACT output of that command —
+                     redirect it to a temp file and Read it back; NEVER re-type, summarize, or
+                     shorten a line (ONE truncated long line = corrupt patch = the ENTIRE apply
+                     fails for every file). If any line is long anor the hunk is more than you
+                     can carry byte-verbatim, use disposition "write" with the full theirs
+                     content instead — write is always safe. You may verify a hunk with
+                     git -C <provenance.scpRepoRoot> apply --check --whitespace=nowarn <tmpfile>
+                     BEFORE writing the resolution file ONLY — never after (THE LANDING RACE).
                      BOTH-ADDED-IDENTICAL (base absent · ours===theirs · empty hunk): use
                      disposition "write" with the full content instead — never an empty patch.
       - "preserve" → the apply quality does NOTHING (the user's file wins). Use this for every
