@@ -2,17 +2,13 @@
   "name": "isomorphicexpanse-scp",
   "license": "GPL-3.0",
   "version": "0.1.0",
-  "description": "IsomorphicExpanse SCP - Personalized Stratimuxian Manifold",
+  "description": "IsomorphicExpanse \u2014 a Suite Cascade Protocol (SCP) instance \u00b7 active development \u00b7 proof-of-concept form factor",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "repository": {
-    "type": "git",
-    "directory": "https://github.com/Phuire-Research/STRATIMUX-TEMPLATE.git"
-  },
   "scripts": {
     "bridge": "npm run build:server && npm run build:client && npx nodemon",
     "start": "npm run build:all && node dist/index.js",
@@ -23,10 +19,12 @@
     "test": "jest"
   },
   "keywords": [
+    "SCP",
+    "Suite Cascade System",
+    "ARIOS",
+    "Stratimux",
     "Muxified Turing Machine",
-    "Asynchronous Graph Programming",
-    "Framework",
-    "Template"
+    "Asynchronous Graph Programming"
   ],
   "author": "Micah T. Keller (public@phuire.org)",
   "devDependencies": {
