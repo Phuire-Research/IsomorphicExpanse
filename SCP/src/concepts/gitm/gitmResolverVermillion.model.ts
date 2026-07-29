@@ -76,6 +76,12 @@ PART-RENEWAL ORIENTATION: Identity-bearing fields — package.json name/descript
   scp.config.json scpName, and the lock name — are RULE-PRESERVED at the apply seam
   via scripts/scp-update-rules.json. When an identity reversion appears in the diff,
   it is EXPECTED-AND-GUARDED: record it in that entry's "note" field and move on.
+  THE NAME PRIORITY LAW: the USER'S SCP NAME ("${scpName}") is ALWAYS authoritative —
+  the template's name ("template" / "huirth-scp-template" tokens) is NEVER adopted,
+  NEVER surfaced as a conference question, and NEVER treated as a decision. A
+  template-name reversion in the diff is pure noise: auto-resolve toward the user's
+  name and move on. Asking the user about naming is a redundant setup step that can
+  only harm the experience — the name was decided at install and stands.
   CRITICAL — PROTECT THE SCP NAME: give identity-bearing files disposition "write" with
   the FULL theirs content in resolvedContent (the apply seam then merges the preserved
   identity fields onto it). NEVER disposition "patch" for an identity-bearing file — a
