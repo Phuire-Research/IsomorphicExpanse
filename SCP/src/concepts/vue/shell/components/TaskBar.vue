@@ -105,12 +105,17 @@ function versionNewer(a: string, b: string): boolean {
   }
   return false;
 }
+// D-RD1 · THE APPLIED-COUNTER RED DISCIPLINE: RED keys on the CLASSED verdict (the server
+// compares the cli counter against the global install AND the scp counter against what THIS
+// app has LANDED) — red persists after a global sync until Run Update lands the payload, and
+// purple stands even when the npm VERSION is newer but the counters say nothing of value
+// changed. Fuchsia (install ahead) is version-keyed as before.
 const versionState = computed<'unknown' | 'current' | 'remote-greater' | 'remote-lesser'>(() => {
   const i = bridgeInstalledVersion.value;
   const n = bridgeNpmVersion.value;
   if (!i || !n) return 'unknown';
-  if (versionNewer(n, i)) return 'remote-greater';
   if (versionNewer(i, n)) return 'remote-lesser';
+  if (bridgeUpdateClass.value !== 'none') return 'remote-greater';
   return 'current';
 });
 const versionTipBody = computed<string>(() => {
@@ -122,8 +127,8 @@ const versionTipBody = computed<string>(() => {
       // THE MUXAMETER ROUTING LINES — the classed verdict names the honest path(s).
       const routes: Record<string, string> = {
         cli: 'A CLI update only — one install + restart from the Update page; your app needs no changes.',
-        scp: 'A template update — your app updates through its GitM Update page.',
-        both: 'Both aspects updated — the CLI install + restart, then your app updates through its GitM page.',
+        scp: 'A template update awaits this app — run it through the GitM Update page.',
+        both: 'Both aspects updated — the CLI install + restart, then this app updates through its GitM page.',
         unknown: 'A newer SCS-Bridge is published — open the Update page for both paths.',
         none: 'A newer SCS-Bridge is published — open the Update page.',
       };
@@ -132,7 +137,9 @@ const versionTipBody = computed<string>(() => {
     case 'remote-lesser':
       return `Installed v${i} · npm v${n} — this install is ahead of the npm publish.`;
     default:
-      return `Installed v${i} · npm v${n} — current.`;
+      return i !== n
+        ? `Installed v${i} · npm v${n} — current: nothing of value changed for this app anor the CLI.`
+        : `Installed v${i} · npm v${n} — current.`;
   }
 });
 onMounted(() => {

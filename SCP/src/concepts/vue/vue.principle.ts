@@ -2509,6 +2509,13 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
   // (scsMuxameter { cli, scp } · monotonic) ride the npm /latest custom field; the verdict is
   // pure comparison: remote.cli > installed.cli → the CLI update · remote.scp > installed.scp
   // → the SCP Update circuit · both → both · pre-counter publishes → 'unknown' (both-paths).
+  // D-RD1 · THE APPLIED-COUNTER RED DISCIPLINE: the red verdict keys on what THIS SCP has
+  // LANDED (appliedScpMuxameter · scp.config.json scsMuxameterScp — stamped at install +
+  // every update-apply), NOT on the global install. Red persists after the global sync
+  // until Run Update lands the payload; purple returns only when both counters are current
+  // — even when the npm VERSION is newer (counters equal = nothing of value → no nag).
+  // `syncAvailable` (version differs remote-newer) drives the install button independently
+  // of the class — the double bind (button hidden while red persists) is dissolved.
   type ScsCounterPair = { cli: number; scp: number };
   const scsBridgeVersionCheck: {
     installedVersion: string | null;
@@ -2516,6 +2523,8 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     checkedAt: number;
     installedMuxameter: ScsCounterPair | null;
     remoteMuxameter: ScsCounterPair | null;
+    appliedScpMuxameter: number | null;
+    syncAvailable: boolean;
     updateClass: 'none' | 'cli' | 'scp' | 'both' | 'unknown';
   } = {
     installedVersion: null,
@@ -2523,6 +2532,8 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     checkedAt: 0,
     installedMuxameter: null,
     remoteMuxameter: null,
+    appliedScpMuxameter: null,
+    syncAvailable: false,
     updateClass: 'none',
   };
   const parseCounterPair = (m: unknown): ScsCounterPair | null => {
@@ -2544,6 +2555,18 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       scsBridgeVersionCheck.installedVersion = null;
       scsBridgeVersionCheck.installedMuxameter = null;
     }
+    // The applied counter — THIS SCP's own scp.config.json (the /scp-config resolution).
+    // Absent (pre-law SCP) → null; the verdict falls back to installed-vs-remote for the
+    // scp leg until the first stamped apply.
+    try {
+      const cfg = JSON.parse(
+        fs.readFileSync(path.resolve(process.cwd(), 'scp.config.json'), 'utf-8'),
+      ) as { scsMuxameterScp?: unknown };
+      scsBridgeVersionCheck.appliedScpMuxameter =
+        typeof cfg?.scsMuxameterScp === 'number' ? cfg.scsMuxameterScp : null;
+    } catch {
+      scsBridgeVersionCheck.appliedScpMuxameter = null;
+    }
   };
   const versionIsNewer = (a: string, b: string): boolean => {
     const av = a.split('.').map((s) => parseInt(s, 10) || 0);
@@ -2557,19 +2580,23 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
   const deriveScsUpdateClass = (): void => {
     const i = scsBridgeVersionCheck.installedVersion;
     const n = scsBridgeVersionCheck.npmLatestVersion;
-    const updateAvailable = !!i && !!n && versionIsNewer(n, i);
-    if (!updateAvailable) {
-      scsBridgeVersionCheck.updateClass = 'none';
-      return;
-    }
+    const remoteVersionNewer = !!i && !!n && versionIsNewer(n, i);
+    // The install button's key — independent of the class (the double-bind cure).
+    scsBridgeVersionCheck.syncAvailable = remoteVersionNewer;
     const im = scsBridgeVersionCheck.installedMuxameter;
     const rm = scsBridgeVersionCheck.remoteMuxameter;
     if (!im || !rm) {
-      scsBridgeVersionCheck.updateClass = 'unknown';
+      // Pre-counter side(s): the counters cannot judge — the version comparison stands in
+      // (the pre-Muxameter behavior · 'unknown' = both-paths-safe when an update exists).
+      scsBridgeVersionCheck.updateClass = remoteVersionNewer ? 'unknown' : 'none';
       return;
     }
+    // THE APPLIED-COUNTER LAW: counters govern; the version does NOT gate. The cli leg
+    // compares the global install; the scp leg compares what THIS SCP has LANDED (applied
+    // absent → the installed-vs-remote fallback — no regression for pre-law SCPs).
+    const applied = scsBridgeVersionCheck.appliedScpMuxameter;
     const cli = rm.cli > im.cli;
-    const scp = rm.scp > im.scp;
+    const scp = applied === null ? rm.scp > im.scp : rm.scp > applied;
     scsBridgeVersionCheck.updateClass = cli && scp ? 'both' : cli ? 'cli' : scp ? 'scp' : 'none';
   };
   const acceptRemote = (version: string, muxameter: unknown): void => {
