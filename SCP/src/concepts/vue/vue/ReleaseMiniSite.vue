@@ -55,6 +55,21 @@ interface ReleaseCategory {
 // The single typed structure — built from the salvo files' content, VERBATIM.
 const RELEASE_SITE: ReleaseCategory[] = [
   {
+    id: 'v0934',
+    label: 'New in 0.934.0',
+    features: [
+      {
+        title: 'Updates, classed — the version label knows which kind',
+        color: 'purple',
+        summary: 'Every release now declares which aspect it changes — the CLI, your app’s template, anor both — and the version label routes you to exactly the right motion.',
+        detail: [
+          'Each published release carries two counters — one for the <span class="hifi-hl-purple">CLI</span>, one for the <span class="hifi-hl-blue">app template</span> — and your installation compares them against npm on its own. The label beside your app’s name turns <span class="hifi-hl-red">red</span> the moment something newer is published, and its hover tells you precisely which path applies: a template update runs through your app’s Update page; a CLI-only update needs <span class="hifi-hl-green">no app changes at all</span>.',
+          'Clicking the label lands directly on the Update page. When the CLI is due, an <span class="hifi-hl-purple">Update SCS-Bridge CLI</span> action installs it for you — then a RESTART REQUIRED notice hands the relaunch to you. When only the CLI changed, the page says so outright and the whole update circuit stands down: nothing to resolve, nothing to apply.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'v0933',
     label: 'New in 0.933.0',
     features: [

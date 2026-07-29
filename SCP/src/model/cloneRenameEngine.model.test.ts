@@ -79,7 +79,7 @@ describe('cloneRenameEngine.model', () => {
 
     it('replaces template package name with lowercased {conceptName}-scp', () => {
       const rules = buildRenameRules(d);
-      const pkgRule = rules.find((r) => r.template === 'isomorphicexpanse-scp')!;
+      const pkgRule = rules.find((r) => r.template === 'huirth-scp-template')!;
       expect(pkgRule.replacement).toBe('myresearch-scp');
     });
 
@@ -93,7 +93,7 @@ describe('cloneRenameEngine.model', () => {
   describe('applyRenameRules', () => {
     it('substitutes template package name', () => {
       const rules = buildRenameRules({ designation: 'MyResearch', conceptName: 'myResearch' });
-      const out = applyRenameRules('"name": "isomorphicexpanse-scp"', rules);
+      const out = applyRenameRules('"name": "huirth-scp-template"', rules);
       expect(out).toBe('"name": "myresearch-scp"');
     });
 
@@ -106,7 +106,7 @@ describe('cloneRenameEngine.model', () => {
     it('applies multiple substitutions in one pass', () => {
       const rules = buildRenameRules({ designation: 'Foo', conceptName: 'foo' });
       const out = applyRenameRules(
-        '"name": "isomorphicexpanse-scp" — HuiRth SCP Template - Barebones Co-Located Vue Island Architecture',
+        '"name": "huirth-scp-template" — HuiRth SCP Template - Barebones Co-Located Vue Island Architecture',
         rules,
       );
       expect(out).toContain('foo-scp');
@@ -121,9 +121,9 @@ describe('cloneRenameEngine.model', () => {
       mkdirSync(path.join(tmpl, 'src'), { recursive: true });
       writeFileSync(
         path.join(tmpl, 'package.json'),
-        '{"name": "isomorphicexpanse-scp", "version": "0.1.0"}',
+        '{"name": "huirth-scp-template", "version": "0.1.0"}',
       );
-      writeFileSync(path.join(tmpl, 'src', 'main.ts'), '// isomorphicexpanse-scp entry');
+      writeFileSync(path.join(tmpl, 'src', 'main.ts'), '// huirth-scp-template entry');
 
       const dest = path.join(tmp, 'dest');
       const rules = buildRenameRules({ designation: 'Foo', conceptName: 'foo' });
@@ -135,7 +135,7 @@ describe('cloneRenameEngine.model', () => {
 
       const pkg = readFileSync(path.join(dest, 'package.json'), 'utf8');
       expect(pkg).toContain('foo-scp');
-      expect(pkg).not.toContain('isomorphicexpanse-scp');
+      expect(pkg).not.toContain('huirth-scp-template');
 
       const main = readFileSync(path.join(dest, 'src', 'main.ts'), 'utf8');
       expect(main).toContain('foo-scp');
@@ -206,7 +206,7 @@ describe('cloneRenameEngine.model', () => {
       // Set up fake template
       const tmpl = path.join(tmp, 'template');
       mkdirSync(path.join(tmpl, 'src', 'concepts'), { recursive: true });
-      writeFileSync(path.join(tmpl, 'package.json'), '{"name": "isomorphicexpanse-scp"}');
+      writeFileSync(path.join(tmpl, 'package.json'), '{"name": "huirth-scp-template"}');
       writeFileSync(path.join(tmpl, 'src', 'main.ts'), '// template entry');
 
       const installRoot = path.join(tmp, 'install', 'SCP');
