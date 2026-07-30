@@ -2,7 +2,7 @@
   "name": "isomorphicexpanse-scp",
   "license": "GPL-3.0",
   "version": "0.1.0",
-  "description": "IsomorphicExpanse \u2014 a Suite Cascade Protocol (SCP) instance \u00b7 active development \u00b7 proof-of-concept form factor",
+  "description": "IsomorphicExpanse — a Suite Cascade Protocol (SCP) instance · active development · proof-of-concept form factor",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -65,7 +65,7 @@
     "nanoid": "^5.1.5",
     "rimraf": "^6.0.1",
     "rxjs": "^7.8.1",
-    "stratimux": "0.3.295",
+    "stratimux": "0.3.296",
     "vue": "^3.5.26"
   }
 }
