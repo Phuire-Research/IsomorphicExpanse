@@ -55,6 +55,21 @@ interface ReleaseCategory {
 // The single typed structure — built from the salvo files' content, VERBATIM.
 const RELEASE_SITE: ReleaseCategory[] = [
   {
+    id: 'v0939',
+    label: 'New in 0.939.0',
+    features: [
+      {
+        title: 'The substrate renewed — Stratimux 0.3.296',
+        color: 'green',
+        summary: 'The functional runtime every surface stands on advances to its newest release — the CLI, the app template, and the flagship apps all carry it together.',
+        detail: [
+          'Stratimux is the <span class="hifi-hl-green">Muxified Turing Machine</span> this whole window runs on — the bridge, your app’s server, and every page compose through it. This release moves all of them to <span class="hifi-hl-blue">0.3.296</span> in one motion, boot-proven before shipping: the app answers on its own doors under the new pin before the release carries it.',
+          'And the Open Race now rides both faces: the <span class="hifi-hl-fuchsia">06 · The Open Race</span> section on your Home page and its twin in the README — the season ladder, the MPL 2.0 return, and the one door to the Commons.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'v0938',
     label: 'New in 0.938.0',
     features: [
