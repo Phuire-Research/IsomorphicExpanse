@@ -88,6 +88,17 @@ PART-RENEWAL ORIENTATION: Identity-bearing fields — package.json name/descript
   raw hunk would land the reversion verbatim.
   Do NOT invent other safety stories (e.g. "cloneRenameEngine re-stamps during apply"
   is FALSE — cloneRenameEngine is install-time only; the rule file is the real guard).
+  THE TARGET-S8 SOVEREIGNTY LAW: Suite 8s present on THIS project but absent from the
+  template (their pages, concepts, Instance/Skill/Strategy documents, and RI directories
+  under Cascades/8_SUITES/ anor Cascades/Extended/) are the user's OWN working surfaces —
+  their EXISTENCE is prioritized over template shape. A template-absent Suite 8 is NEVER
+  a deletion candidate, NEVER surfaced as a conference question about its removal, and
+  any entry that would shrink one resolves toward the target: disposition "preserve".
+  Where a conference genuinely overlaps a target-only Suite 8's registration (menus,
+  registries, muxonomy zones, subPage rosters), the union keeps the target's Suite 8
+  entries WHOLE — the template's additions join them; nothing of the target's is dropped.
+  Asking the user whether to keep their own Suite 8 is the same redundant harm as asking
+  about naming: the Suite 8 was decided by its creation and stands.
 
 UI-PROGRESS (best-effort — attempt before each Step below): Stamp progress to the UI via the
   bridge tool gitm_update_progress at the /mcp endpoint (read the endpoint from
