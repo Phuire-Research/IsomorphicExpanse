@@ -138,6 +138,25 @@ onUnmounted(() => {
       </div>
     </header>
 
+    <!-- ═ THE CONTRIBUTE BAND ═ — a NavBar-weight strip under the header: the one door to
+         the Commons (scp-origin.com/contribute · grounded on the live Contribute surface).
+         Minimal by law: one line, one action. -->
+    <nav class="contribute-band hifi-pane-transparent" aria-label="Contribute">
+      <span class="contribute-band-line">
+        <span class="hifi-hl-fuchsia">Support the paradigm shift</span> — a subscription grants
+        an <span class="hifi-hl-green">MPL 2.0 license</span> to the release projects in return,
+        anor donate to fund the open RoadMap directly.
+      </span>
+      <a
+        class="hifi-btn hifi-btn-fuchsia contribute-band-btn"
+        href="https://scp-origin.com/contribute"
+        target="_blank"
+        rel="noopener"
+      >
+        Contribute
+      </a>
+    </nav>
+
     <main class="home-body">
       <!-- ===================== THE NAMED SCP · C801 Damascus revision (the first-session
            walkthrough retired — the viewer IS in their first session at first public viewing;
@@ -330,6 +349,26 @@ onUnmounted(() => {
     </footer>
   </div>
 </template>
+
+<style scoped>
+/* ═ THE CONTRIBUTE BAND ═ — NavBar-weight · one line + one action. */
+.contribute-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1.1rem;
+  margin: 0.5rem 1.25rem 0;
+}
+.contribute-band-line {
+  font-size: 0.82rem;
+  color: rgba(230, 226, 216, 0.72);
+}
+.contribute-band-btn {
+  white-space: nowrap;
+}
+</style>
 
 <style scoped>
 .scp-home {
