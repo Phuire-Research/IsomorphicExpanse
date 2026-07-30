@@ -71,8 +71,11 @@ export function validateScpManifest(raw: string): ManifestValidation {
   if (typeof c.message !== 'string' || c.message.trim().length < 1 || c.message.trim().length > 200) {
     return { ok: false, reason: 'commit.message must be 1-200 chars' };
   }
-  if (typeof c.timestamp !== 'string' || !/Z$/.test(c.timestamp)) {
-    return { ok: false, reason: 'commit.timestamp must be ISO 8601 UTC (Z-suffixed)' };
+  // UTC in either spelling — git and generators emit the +00:00 offset form as readily as
+  // the Z suffix; both name the same instant. Rejecting one is needless strictness (the
+  // field-caught scp-origin.com reject class).
+  if (typeof c.timestamp !== 'string' || !/(?:Z|[+-]00:00)$/.test(c.timestamp)) {
+    return { ok: false, reason: 'commit.timestamp must be ISO 8601 UTC (Z anor +00:00)' };
   }
   const ts = Date.parse(c.timestamp);
   if (Number.isNaN(ts)) return { ok: false, reason: 'commit.timestamp does not parse' };
