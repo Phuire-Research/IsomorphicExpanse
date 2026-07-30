@@ -43,6 +43,37 @@ what was actually done, diagnosed cycle by cycle). Read
 arc — the history of `Hello, World!`, traced to primary sources. The history is part of the
 artifact.
 
+## Pass-Through Interaction with Agents
+
+The feature this SCP exists to prove: **driving agents from game worlds** — a proof of
+concept for play and work running on the same clock.
+
+![The Isomorphic Expanse game world](assets/game-world.png)
+
+The Isomorphic Expanse is a world the visitor and its guide build together. The guide is
+inside the world — the sole inhabitant — and the dialog window over its head is its voice,
+riding a **real Claude Code session**. Recorded from its own working Diamond, the means:
+
+- **The Bound Anchor Chat** — talking to the guide reaches a real session; replies come back
+  brief and in character, while deep work lands in its terminal.
+- **Tool Approval in Chat** — a held permission gate becomes answerable rows right in the
+  dialog: the agent's real approval surface, passed through the game.
+- **Live Feed Ack** — while the guide works, the typing indicator names the tool it is
+  actually running, held between tools.
+- **One turn per step** — clicking a distant tile traces a route and walks it one deliberate
+  turn at a time, around people and furniture; the turn you take in the game is the turn the
+  agent takes in the work.
+- **The Agent-Authored Menu** — the guide writes its own doors (`menu.json`); they appear in
+  the world and survive reloads.
+- **Self-Knowledge** — the guide carries Skills describing its own architecture, and revises
+  them as the space changes.
+
+![Pass-through dialog — the guide speaking mid-session](assets/pass-through.png)
+
+The dialog is not a chat skin over an API — it is the session itself, passed through: its
+voice, its tool feed, and its approval gate all surface inside the world while the work
+feeds the world the visitor is standing in.
+
 ## Running it
 
 IsomorphicExpanse installs and runs under SCS-Bridge — it is not a standalone npm package.
