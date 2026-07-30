@@ -138,25 +138,6 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <!-- ═ THE CONTRIBUTE BAND ═ — a NavBar-weight strip under the header: the one door to
-         the Commons (scp-origin.com/contribute · grounded on the live Contribute surface).
-         Minimal by law: one line, one action. -->
-    <nav class="contribute-band hifi-pane-transparent" aria-label="Contribute">
-      <span class="contribute-band-line">
-        <span class="hifi-hl-fuchsia">Support the paradigm shift</span> — a subscription grants
-        an <span class="hifi-hl-green">MPL 2.0 license</span> to the release projects in return,
-        anor donate to fund the open RoadMap directly.
-      </span>
-      <a
-        class="hifi-btn hifi-btn-fuchsia contribute-band-btn"
-        href="https://scp-origin.com/contribute"
-        target="_blank"
-        rel="noopener"
-      >
-        Contribute
-      </a>
-    </nav>
-
     <main class="home-body">
       <!-- ===================== THE NAMED SCP · C801 Damascus revision (the first-session
            walkthrough retired — the viewer IS in their first session at first public viewing;
@@ -335,6 +316,63 @@ onUnmounted(() => {
         </dl>
       </section>
 
+      <!-- ===================== THE OPEN RACE · the Contribute widget (grounded on the
+           SCP-Origin Home's race dynamic — seasons on a course, one racing line after
+           another, run in the open). The one door to the Commons. ===================== -->
+      <section class="home-section hifi-pane-fuchsia">
+        <p class="section-eyebrow hifi-mono">06 · THE OPEN RACE</p>
+        <h2 class="section-title hifi-heading">A race run in the open</h2>
+        <p class="section-lede">
+          Right now is the <span class="hifi-hl-fuchsia">Training Season</span> — the machine
+          you are using is the first car on the grid, built and proven before it takes the
+          course. The course runs one racing line after another, to a single finishing line.
+        </p>
+        <ol class="race-ladder">
+          <li class="race-line hifi-pane-base race-line-now">
+            <span class="race-flag hifi-mono">NOW</span>
+            <span class="race-name hifi-heading">The Training Season</span>
+            <span class="race-what">First Public Release — SCS-Bridge + the <ScpMark /> Template</span>
+          </li>
+          <li class="race-line hifi-pane-base">
+            <span class="race-flag hifi-mono">NEXT</span>
+            <span class="race-name hifi-heading">The Testing Season</span>
+            <span class="race-what">The Reference Design Marketplace</span>
+          </li>
+          <li class="race-line hifi-pane-base">
+            <span class="race-flag hifi-mono">THEN</span>
+            <span class="race-name hifi-heading">The Season Opener</span>
+            <span class="race-what">The Suite Bulletin System</span>
+          </li>
+          <li class="race-line hifi-pane-base">
+            <span class="race-flag hifi-mono">····</span>
+            <span class="race-name hifi-heading">The Summer Stretch</span>
+            <span class="race-what">One racing line after another</span>
+          </li>
+          <li class="race-line hifi-pane-base race-line-finish">
+            <span class="race-flag hifi-mono">🏁</span>
+            <span class="race-name hifi-heading">The Grand Prix</span>
+            <span class="race-what">SCS Dedicated Hardware — the finishing line</span>
+          </li>
+        </ol>
+        <p class="race-offer">
+          <span class="hifi-hl-fuchsia">Support the paradigm shift</span> and it supports you
+          back: a subscription grants an <span class="hifi-hl-green">MPL 2.0 license</span> to
+          the release projects — free to use, including in your own commercial work — anor
+          donate to fund the open RoadMap directly. Donations accelerate the run.
+        </p>
+        <div class="race-actions">
+          <a
+            class="hifi-btn hifi-btn-fuchsia"
+            href="https://scp-origin.com/contribute"
+            target="_blank"
+            rel="noopener"
+          >
+            Contribute — join the race
+          </a>
+          <span class="race-actions-note hifi-mono">scp-origin.com/contribute</span>
+        </div>
+      </section>
+
       <!-- C814 · THE CONCLUDER (the inducted close · Damascus voice held · the transparent
            glass vessel — the frame the user's own conception fills). -->
       <footer class="home-concluder hifi-pane-transparent">
@@ -351,22 +389,58 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ═ THE CONTRIBUTE BAND ═ — NavBar-weight · one line + one action. */
-.contribute-band {
+/* ═ 06 · THE OPEN RACE ═ — the Contribute widget (the season ladder + the one action). */
+.race-ladder {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.9rem 0;
+  padding: 0;
+}
+.race-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  flex-wrap: wrap;
+}
+.race-flag {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  min-width: 2.6rem;
+  color: rgba(230, 226, 216, 0.45);
+}
+.race-line-now .race-flag {
+  color: var(--hifi-fuchsia, #d16bd1);
+}
+.race-name {
+  font-size: 0.92rem;
+}
+.race-what {
+  font-size: 0.78rem;
+  color: rgba(230, 226, 216, 0.55);
+}
+.race-line-now {
+  border-left: 2px solid var(--hifi-fuchsia, #d16bd1);
+}
+.race-line-finish .race-name {
+  color: rgba(230, 226, 216, 0.92);
+}
+.race-offer {
+  font-size: 0.85rem;
+  color: rgba(230, 226, 216, 0.72);
+  margin: 0.4rem 0 0.8rem;
+}
+.race-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.8rem;
   flex-wrap: wrap;
-  padding: 0.6rem 1.1rem;
-  margin: 0.5rem 1.25rem 0;
 }
-.contribute-band-line {
-  font-size: 0.82rem;
-  color: rgba(230, 226, 216, 0.72);
-}
-.contribute-band-btn {
-  white-space: nowrap;
+.race-actions-note {
+  font-size: 0.68rem;
+  color: rgba(230, 226, 216, 0.4);
 }
 </style>
 
