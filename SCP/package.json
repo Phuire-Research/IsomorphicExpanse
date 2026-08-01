@@ -9,6 +9,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "directory": "https://github.com/Phuire-Research/STRATIMUX-TEMPLATE.git"
+  },
   "scripts": {
     "bridge": "npm run build:server && npm run build:client && npx nodemon",
     "start": "npm run build:all && node dist/index.js",
@@ -19,12 +23,10 @@
     "test": "jest"
   },
   "keywords": [
-    "SCP",
-    "Suite Cascade System",
-    "ARIOS",
-    "Stratimux",
     "Muxified Turing Machine",
-    "Asynchronous Graph Programming"
+    "Asynchronous Graph Programming",
+    "Framework",
+    "Template"
   ],
   "author": "Micah T. Keller (public@phuire.org)",
   "devDependencies": {
