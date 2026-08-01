@@ -1568,6 +1568,20 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     );
   });
 
+  // THE CREATE DOOR (SCP Management · the Freshest-Template workflow): a designation-only
+  // create — the bridge installs from the BUNDLED template (the Freshest-Template Law: the
+  // npm package's copy renews with every bridge install and now WINS the source resolution),
+  // staging progress in the same per-designation sidecar the manifest install polls.
+  // One field, one press: a new SCP born current.
+  expressApp.post('/bridge-create-scp', express.json(), (req, res) => {
+    const { designation } = (req.body ?? {}) as { designation?: string };
+    if (!designation || !/^[A-Z][A-Za-z0-9]*$/.test(designation)) {
+      res.status(400).json({ ok: false, error: 'designation must be PascalCase (e.g. MyProject)' });
+      return;
+    }
+    void invokeBridgeTool('install_scp', { designation }).then((out) => res.json(out as object));
+  });
+
   // C833 · THE EFFECTIVE DESCRIPTION RESOLVER — the ONE resolver both the /s8/:name/description
   // reader AND the manifest generator use. Precedence: Description.md (the authored file-system
   // aspect · the Suite 8 Card System's editing surface writes it · sessions edit it directly) →

@@ -58,6 +58,93 @@ const rowBusy = ref<Record<string, boolean>>({});
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
+// ══ ZONE 3 · CREATE A NEW SCP (FB-2 · the Freshest-Template workflow) ══
+// The Reference Design is the C839 staged rail (ScpManifestIntake) — the SAME poll route,
+// the SAME stage states, reused verbatim. One field, one press: the bridge refreshes the
+// template to the freshest release (the retained-clone seam) and births the SCP from it.
+type CreateStage = 'idle' | 'cloning' | 'installing' | 'ready' | 'failed' | 'timeout';
+const createDesignation = ref('');
+const createValid = computed(() => /^[A-Z][A-Za-z0-9]*$/.test(createDesignation.value));
+const createStage = ref<CreateStage>('idle');
+const createStageDetail = ref('');
+const createFailReason = ref('');
+const CREATE_POLL_MS = 1200;
+const CREATE_POLL_MAX = 500;
+let createPollTimer: ReturnType<typeof setInterval> | null = null;
+let createPollCount = 0;
+
+function stopCreatePolling(): void {
+  if (createPollTimer !== null) { clearInterval(createPollTimer); createPollTimer = null; }
+}
+
+function beginCreatePolling(target: string): void {
+  stopCreatePolling();
+  createPollCount = 0;
+  createStage.value = 'cloning';
+  createStageDetail.value = '';
+  createFailReason.value = '';
+  createPollTimer = setInterval(async () => {
+    createPollCount += 1;
+    if (createPollCount > CREATE_POLL_MAX) {
+      createStage.value = 'timeout';
+      stopCreatePolling();
+      return;
+    }
+    try {
+      const r = await fetch(`/bridge-install-progress/${encodeURIComponent(target)}`);
+      if (!r.ok) return;
+      const p = (await r.json()) as { stage?: string; detail?: string; reason?: string } | null;
+      if (!p || typeof p.stage !== 'string') return;
+      if (p.stage === 'cloning' || p.stage === 'installing') {
+        createStage.value = p.stage;
+        createStageDetail.value = p.detail ?? '';
+      } else if (p.stage === 'ready') {
+        createStage.value = 'ready';
+        createStageDetail.value = p.detail ?? '';
+        stopCreatePolling();
+        void refreshRoster();
+      } else if (p.stage === 'failed') {
+        createStage.value = 'failed';
+        createFailReason.value = p.reason ?? 'install failed (no reason reported)';
+        stopCreatePolling();
+      }
+    } catch { /* transient — the next tick retries */ }
+  }, CREATE_POLL_MS);
+}
+
+function createNotchState(notch: 'clone' | 'install' | 'ready'): 'idle' | 'active' | 'done' {
+  const s = createStage.value;
+  if (notch === 'clone') {
+    return s === 'cloning' ? 'active' : s === 'installing' || s === 'ready' ? 'done' : 'idle';
+  }
+  if (notch === 'install') {
+    return s === 'installing' ? 'active' : s === 'ready' ? 'done' : 'idle';
+  }
+  return s === 'ready' ? 'done' : 'idle';
+}
+
+async function handleCreate(): Promise<void> {
+  if (!createValid.value || createStage.value === 'cloning' || createStage.value === 'installing') return;
+  const target = createDesignation.value;
+  try {
+    const res = await fetch('/bridge-create-scp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ designation: target }),
+    });
+    const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+    if (!res.ok || body?.ok === false) {
+      createStage.value = 'failed';
+      createFailReason.value = body?.error ?? `create request failed (${res.status})`;
+      return;
+    }
+    beginCreatePolling(target);
+  } catch (err) {
+    createStage.value = 'failed';
+    createFailReason.value = String(err);
+  }
+}
+
 async function refreshRoster(): Promise<void> {
   try {
     const res = await fetch('/bridge-roster');
@@ -75,6 +162,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   if (pollTimer !== null) clearInterval(pollTimer);
+  stopCreatePolling();
 });
 
 const rosterRows = computed(() => {
@@ -157,6 +245,55 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
     <!-- ZONE 2 · INSTALL FROM MANIFEST (commit-pinned) -->
     <ScpManifestIntake :notice-viewed="noticeViewed" />
 
+    <!-- ZONE 3 · CREATE A NEW SCP (FB-2 · the Freshest-Template workflow · the C839
+         staged rail as the Reference Design). The bridge refreshes the template to the
+         freshest release before the birth — never a stale vintage. -->
+    <section class="scs-create hifi-pane-green">
+      <h3 class="hifi-heading">Create a New SCP</h3>
+      <p class="scs-create-lede">
+        Name it, and it is born from the <span class="hifi-hl-green">freshest template</span> —
+        the bridge refreshes to the latest release before the install; your name stands from
+        the first commit.
+      </p>
+      <div class="scs-create-row">
+        <input
+          v-model="createDesignation"
+          class="scs-create-input hifi-mono"
+          type="text"
+          placeholder="PascalCase · e.g. MyStudio"
+          spellcheck="false"
+          @keyup.enter="handleCreate"
+        />
+        <button
+          class="hifi-btn hifi-btn-green"
+          :disabled="!createValid || createStage === 'cloning' || createStage === 'installing'"
+          @click="handleCreate"
+        >
+          {{ createStage === 'cloning' || createStage === 'installing' ? 'Creating…' : 'Create' }}
+        </button>
+        <span v-if="createDesignation && !createValid" class="scs-create-hint hifi-mono">PascalCase required</span>
+      </div>
+      <div v-if="createStage !== 'idle'" class="scs-create-rail">
+        <div class="scs-create-notches hifi-mono">
+          <span :class="['scs-create-notch', `scs-create-notch-${createNotchState('clone')}`]">CLONE</span>
+          <span aria-hidden="true">→</span>
+          <span :class="['scs-create-notch', `scs-create-notch-${createNotchState('install')}`]">INSTALL</span>
+          <span aria-hidden="true">→</span>
+          <span :class="['scs-create-notch', `scs-create-notch-${createNotchState('ready')}`]">READY</span>
+        </div>
+        <p v-if="createStage === 'ready'" class="scs-create-line scs-create-ready">
+          Born current — {{ createStageDetail || 'the roster now lists it.' }}
+        </p>
+        <p v-else-if="createStage === 'failed'" class="scs-create-line scs-create-failed">
+          Create failed — {{ createFailReason }}
+        </p>
+        <p v-else-if="createStage === 'timeout'" class="scs-create-line scs-create-failed">
+          No progress within the polling window — check the bridge; the pipeline may still be running.
+        </p>
+        <p v-else-if="createStageDetail" class="scs-create-line">{{ createStageDetail }}</p>
+      </div>
+    </section>
+
     <!-- C842 · THE DIRECT INSTALL WIDGET PRUNED (the user's law: on the manifest
          Lambda's pass, the commit-locked manifest flow IS the install path — no
          un-anchored HEAD installs from the page; the TUI/MCP retain their own paths) -->
@@ -207,6 +344,71 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
     </section>
   </div>
 </template>
+
+<style scoped>
+/* ══ ZONE 3 · CREATE A NEW SCP (FB-2 · the C839 rail idiom) ══ */
+.scs-create {
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.scs-create-lede {
+  font-size: 0.8rem;
+  color: rgba(230, 226, 216, 0.62);
+  margin: 0;
+}
+.scs-create-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.scs-create-input {
+  flex: 0 1 18rem;
+  min-width: 12rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(230, 226, 216, 0.2);
+  border-radius: 4px;
+  color: rgba(230, 226, 216, 0.9);
+  padding: 0.4rem 0.6rem;
+  font-size: 0.82rem;
+}
+.scs-create-hint {
+  font-size: 0.66rem;
+  color: rgba(230, 140, 120, 0.85);
+}
+.scs-create-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.scs-create-notches {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: rgba(230, 226, 216, 0.35);
+}
+.scs-create-notch-active {
+  color: var(--hifi-green, #52a675);
+}
+.scs-create-notch-done {
+  color: rgba(230, 226, 216, 0.85);
+}
+.scs-create-line {
+  font-size: 0.76rem;
+  color: rgba(230, 226, 216, 0.6);
+  margin: 0;
+}
+.scs-create-ready {
+  color: var(--hifi-green, #52a675);
+}
+.scs-create-failed {
+  color: rgba(230, 120, 110, 0.9);
+}
+</style>
 
 <style scoped>
 .scs-install-page {
