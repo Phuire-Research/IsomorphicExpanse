@@ -315,41 +315,88 @@ const currentBranch = computed<string>(() => gitmController?.gitmJson.value?.cur
 const onWorkingB = computed<boolean>(() =>
   isWorkingBranchPer(currentBranch.value, gitmController?.gitmJson.value),
 );
-const showTurnOverDoor = computed<boolean>(() => !onWorkingB.value);
+// THE FORGE CYCLE (the AmberlightStudio field catch · the user's law): the turn-over is
+// NOT a gate before the Forge — it is THE TRIGGER AT THE END of the Forge's work. The
+// Engage door stands open on EVERY branch (spawn at page creation); the cycle-close
+// trigger surfaces once there is WORK TO LAND (the change count — the MEANINGFUL DRIFT
+// law: no changes → no ceremony).
+const forgeWorkPresent = computed<boolean>(() => {
+  const gj = gitmController?.gitmJson.value;
+  return gj?.dirty === true || (gj?.changesPrimedOnB ?? 0) > 0;
+});
+// THE FRESH-TREE READ: a default git tree — no working-B role minted AND no Shield A set
+// (the initial Turn Over on A never ran). The cycle close routes to the INITIAL-A path.
+const freshTree = computed<boolean>(() => {
+  const gj = gitmController?.gitmJson.value;
+  return !(gj?.branchRoles?.b) && !(gj?.stableBranch);
+});
 
 const turnOverSpawning = ref<boolean>(false);
 const turnOverNote = ref<string>('');
 
-// THE TURN OVER REQUEST — on the A side, forge on B. ONE dispatch (triggerHardTurnOver · createBranch
-// true → the huirth runs `git switch -c b/<branch>-<ts>`, carrying the dirty tree onto B; nodemon
-// restarts on B). BEFORE the dispatch, write the SAME failsafe carrier the Sword-B button writes
-// (source 'B' · variant 'sword-b' · deadline-armed · HAZARD-5 byte-match) so the WS-close handler can
-// re-assert the overlay + arm the auto-revert deadline across the respawn gap.
-async function requestTurnOverToB(): Promise<void> {
+// THE CYCLE CLOSE — branch-aware (the field wound: a fresh tree has no B for the Sword-B
+// mechanism, and forcing it collided with the initial Turn Over on A). Three legs:
+//   FRESH TREE  → the initial Turn Over on A, VERBATIM the IslandWrapper dock leg
+//                 (shield-a standby + source-'A' carrier + gitm_turn_over_with_source) —
+//                 the first-contact overlay logic, exactly.
+//   WORKING B   → the plain restart-carrying turn-over on B (the same-branch variant).
+//   A WITH ROLES→ the Sword-B hard mint (git switch -c carries the Forge's work onto B).
+async function requestForgeCycleClose(): Promise<void> {
   const sb = scsBridgeControllerForDoor;
   if (!sb || turnOverSpawning.value) return;
   turnOverSpawning.value = true;
   turnOverNote.value = '';
   try {
-    const fromBranch = currentBranch.value.length > 0 ? currentBranch.value : 'a';
-    // D-BN · THE branchRoles SWEEP · THE CANONICAL MINT — `b/<fromBranch>-<uuid>`, fromBranch VERBATIM
-    // (no prefix stripping) + crypto.randomUUID() (browser global · unique · replaces the legacy Date.now()).
-    const newBranch = `b/${fromBranch}-${crypto.randomUUID()}`;
-    showBridgeStandby('sword-b');
-    writeGitmTurnoverProgress({
-      source: 'B',
-      overlayVariant: 'sword-b',
-    turnClass: 'sword',
-      deadline: Date.now() + GITM_TURNOVER_DEADLINE_MS,
-      stableA: fromBranch,
-      bridgeEndpoint: sb.bridgeJson.value?.endpoint ?? '',
-      scpName: (await sb.getScpName()) ?? undefined,
-    });
-    // ONE dispatch — git switch -c carries the dirty tree onto B; nodemon restarts on B.
-    sb.triggerHardTurnOver('B', newBranch, true);
-    turnOverNote.value = 'Turning over to B — the SCP restarts on your working branch…';
+    const gj = gitmController?.gitmJson.value;
+    if (freshTree.value) {
+      // THE INITIAL TURN OVER ON A (the dock leg, mirrored): the fresh tree's first
+      // turn-over establishes the ground — shield class, shield-a overlay.
+      showBridgeStandby('shield-a', null, 'shield');
+      writeGitmTurnoverProgress({
+        source: 'A',
+        overlayVariant: 'shield-a',
+        turnClass: 'shield',
+        deadline: Date.now() + GITM_TURNOVER_DEADLINE_MS,
+        stableA: gj?.stableBranch ?? '',
+        bridgeEndpoint: sb.bridgeJson.value?.endpoint ?? '',
+        scpName: (await sb.getScpName()) ?? undefined,
+      });
+      sb.triggerGitmAction('gitm_turn_over_with_source', { source: 'A' });
+      turnOverNote.value = 'Turning over — the Forge’s work lands and the SCP rebuilds…';
+    } else if (onWorkingB.value) {
+      // Already on the working branch — the plain restart-carrying turn-over on B.
+      showBridgeStandby('sword-b');
+      writeGitmTurnoverProgress({
+        source: 'B',
+        overlayVariant: 'sword-b',
+        turnClass: 'sword',
+        deadline: Date.now() + GITM_TURNOVER_DEADLINE_MS,
+        stableA: currentBranch.value,
+        bridgeEndpoint: sb.bridgeJson.value?.endpoint ?? '',
+        scpName: (await sb.getScpName()) ?? undefined,
+      });
+      await sb.triggerGitmTurnOver('B');
+      turnOverNote.value = 'Restarting on your working branch — the Forge’s work lands with the rebuild…';
+    } else {
+      // The A side with roles established — the Sword-B hard mint (the door's leg).
+      const fromBranch = currentBranch.value.length > 0 ? currentBranch.value : 'a';
+      // D-BN · THE CANONICAL MINT — `b/<fromBranch>-<uuid>`, fromBranch VERBATIM.
+      const newBranch = `b/${fromBranch}-${crypto.randomUUID()}`;
+      showBridgeStandby('sword-b');
+      writeGitmTurnoverProgress({
+        source: 'B',
+        overlayVariant: 'sword-b',
+        turnClass: 'sword',
+        deadline: Date.now() + GITM_TURNOVER_DEADLINE_MS,
+        stableA: fromBranch,
+        bridgeEndpoint: sb.bridgeJson.value?.endpoint ?? '',
+        scpName: (await sb.getScpName()) ?? undefined,
+      });
+      sb.triggerHardTurnOver('B', newBranch, true);
+      turnOverNote.value = 'Turning over to B — the Forge’s work carries onto your working branch…';
+    }
   } catch {
-    turnOverNote.value = 'Could not turn over to B — is the Bridge running?';
+    turnOverNote.value = 'Could not turn over — is the Bridge running?';
   } finally {
     setTimeout(() => {
       turnOverSpawning.value = false;
@@ -437,35 +484,15 @@ watch(
           />
         </div>
 
-        <!-- W1 · THE TWO-STATE DOOR — branch-aware. On a NON-'b/' branch (the A side · the safe
-             default when the branch read is absent), the door is the TURN OVER REQUEST: forging
-             modifies this Suite's ground, so the work moves onto a working branch you can keep or
-             revert. On a 'b/' branch, the door is the existing Engage-the-Forge anchor spawn. -->
-        <template v-if="showTurnOverDoor">
-          <p class="forge-door-intro">
-            This Suite has a name but no domain yet — forging it modifies this Suite's ground. Turn
-            over to a working branch (B) first: the work happens on a branch you can keep or revert.
-          </p>
-          <button
-            type="button"
-            class="forge-door-btn forge-door-btn--sword-b"
-            :disabled="turnOverSpawning"
-            @click="requestTurnOverToB"
-          >
-            <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
-            <span>{{ turnOverSpawning ? 'Turning over…' : 'Turn Over · Forge on B' }}</span>
-          </button>
-          <p v-if="turnOverSpawning" class="forge-door-note">
-            Turning over to B — the SCP restarts on your working branch…
-          </p>
-          <p v-else-if="turnOverNote" class="forge-door-note">{{ turnOverNote }}</p>
-        </template>
-
-        <!-- ON a 'b/' branch — the EXISTING Engage button (the anchor spawn of the Entourage Forge). -->
-        <template v-else>
+        <!-- THE FORGE CYCLE (the AmberlightStudio field catch) — the Engage door stands OPEN on
+             EVERY branch: the Forge spawns at page creation. The turn-over is not a gate; it is
+             THE TRIGGER AT THE END of the Forge's work — surfacing below once there is work to
+             land, branch-aware (fresh tree → the initial Turn Over on A with its overlay ·
+             working B → the plain B restart · A with roles → the Sword-B mint). -->
+        <template v-if="true">
           <p class="forge-door-intro">
             This Suite has a name but no domain yet — engage the Entourage Forge to research and build
-            it out.
+            it out. When the Forge's work is done, the turn-over below lands it.
           </p>
           <button
             type="button"
@@ -477,6 +504,24 @@ watch(
           </button>
           <p v-if="forgeSpawning" class="forge-door-note">Engaging the Entourage Forge…</p>
           <p v-else-if="forgeSpawnNote" class="forge-door-note">{{ forgeSpawnNote }}</p>
+
+          <!-- THE CYCLE-CLOSE TRIGGER — the end of the Forge's work. Surfaces when the tree
+               carries changes to land; the branch resolution happens at the press. -->
+          <template v-if="forgeWorkPresent">
+            <p class="forge-door-intro forge-cycle-close-intro">
+              The Forge's work is on the tree — turn over to land it and complete the cycle.
+            </p>
+            <button
+              type="button"
+              class="forge-door-btn forge-door-btn--sword-b"
+              :disabled="turnOverSpawning"
+              @click="requestForgeCycleClose"
+            >
+              <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+              <span>{{ turnOverSpawning ? 'Turning over…' : (freshTree ? 'Turn Over · Land the Forge’s Work' : (onWorkingB ? 'Turn Over on B · Land the Forge’s Work' : 'Turn Over to B · Land the Forge’s Work')) }}</span>
+            </button>
+            <p v-if="turnOverNote" class="forge-door-note">{{ turnOverNote }}</p>
+          </template>
 
           <!-- C386 · W3 · THE PREVIOUS-CONDUCTIONS ROW — modest, muted. When OFFLINE Forge sessions
                exist for this SCP, up to 3 re-openable entries (short ulid + model label). Each button
