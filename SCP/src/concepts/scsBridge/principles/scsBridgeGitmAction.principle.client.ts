@@ -20,6 +20,23 @@
  */
 import { ref, type Ref } from 'vue';
 import type { PrincipleFunction, MuxiumDeck } from 'stratimux';
+
+// FKIS-GITM · the sovereign name, pre-warmed at client boot from THIS SCP's own
+// /scp-config declaration (the FKIS resolution). A race before the fetch settles
+// falls back to today's activeScp behavior — settled within milliseconds of boot.
+let sovereignScpName: string | null = null;
+if (typeof window !== 'undefined') {
+  void fetch('/scp-config')
+    .then(async (r) => {
+      const j = (await r.json()) as { scpName?: string };
+      if (typeof j?.scpName === 'string' && j.scpName.length > 0) {
+        sovereignScpName = j.scpName;
+      }
+    })
+    .catch(() => {
+      /* absent config — the activeScp fallback stands */
+    });
+}
 import type {
   ScsBridgeClientState,
   ScsBridgeClientQualities,
@@ -94,13 +111,24 @@ export const scsBridgeGitmActionPrinciple: ScsBridgeGitmActionPrinciple = ({
 
         const url = `${bridgeJson.endpoint}/mcp`;
         const rpcId = Date.now();
+        // FKIS-GITM · THE SOVEREIGN TARGET ATTACH (the None-activeScp push wound): the page
+        // fired gitm actions with NO originScpName — the bridge fell back to activeScp, which
+        // is None whenever no TUI focus set it this session, so actions resolved against the
+        // WRONG target (a push died into the workspace slice with lastActionResult never
+        // landing here). Every gitm call now carries THIS SCP's own declared name unless the
+        // caller already set one — page-fired actions are sovereign, never focus-dependent.
+        const firedArguments = firedAction.arguments as Record<string, unknown>;
+        const composedArguments =
+          sovereignScpName !== null && firedArguments.originScpName === undefined
+            ? { ...firedArguments, originScpName: sovereignScpName }
+            : firedAction.arguments;
         const body = {
           jsonrpc: '2.0',
           id: rpcId,
           method: 'tools/call',
           params: {
             name: firedAction.tool,
-            arguments: firedAction.arguments,
+            arguments: composedArguments,
           },
         };
 
