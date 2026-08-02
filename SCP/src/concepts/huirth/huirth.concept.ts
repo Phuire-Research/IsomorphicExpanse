@@ -65,6 +65,7 @@ export type HuirthPrinciple = PrincipleFunction<void, MuxiumDeck, ServerState>;
 
 import { createIsomorphicExpanseHuirthConcept } from '../isomorphicExpanse/isomorphicExpanse.concept.huirth';
 import { createGraphiteScribeHuirthConcept } from '../graphiteScribe/graphiteScribe.concept.huirth';
+import { createFrontierCircuitTestHuirthConcept } from '../frontierCircuitTest/frontierCircuitTest.concept.huirth';
 export const createHuirthConcept = (settings: Partial<HuirthState>, filterKeys?: string[]) => {
   const muxifiedHuirth = muxifyConcepts(
     [
@@ -83,6 +84,7 @@ export const createHuirthConcept = (settings: Partial<HuirthState>, filterKeys?:
       createCadmiumHuirthConcept(),
       // GTMS8C · Suite8 Huirth face — the Template Suite 8 menu relay (the renameable instance).
       createSuite8HuirthConcept(),
+      createFrontierCircuitTestHuirthConcept(),
       createIsomorphicExpanseHuirthConcept(),
       createGraphiteScribeHuirthConcept(),
       // M2-A1-D4 · SCP Registry + Log concepts (server-side)

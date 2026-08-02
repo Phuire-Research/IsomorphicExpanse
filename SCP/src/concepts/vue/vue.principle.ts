@@ -133,6 +133,7 @@ const DEFAULT_LANDING_MUXONOMIC: MuxonomicConfig<'default'> = {
 
 import { isomorphicExpanseMuxonomic } from '../isomorphicExpanse/isomorphicExpanse.muxonomy';
 import { graphiteScribeMuxonomic } from '../graphiteScribe/graphiteScribe.muxonomy';
+import { frontierCircuitTestMuxonomic } from '../frontierCircuitTest/frontierCircuitTest.muxonomy';
 const REGISTERED_MUXONOMICS: MuxonomicConfig[] = [
   DEFAULT_LANDING_MUXONOMIC,
   notificationMuxonomic,
@@ -145,6 +146,7 @@ const REGISTERED_MUXONOMICS: MuxonomicConfig[] = [
   suite8Muxonomic,
   cadmiumMuxonomic,
   suiteCascadeMuxonomic,
+  frontierCircuitTestMuxonomic,
   // IE-LOCAL (regen-by-mapping · restored C833 — the C822 byte-mirror clobbered it):
   isomorphicExpanseMuxonomic,
   graphiteScribeMuxonomic,
