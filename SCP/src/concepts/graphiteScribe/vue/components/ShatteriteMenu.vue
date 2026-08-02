@@ -120,10 +120,28 @@ const sessionsList = computed<ScsBridgeSessionEntry[]>(
   () => controller.value?.sessionsList.value ?? [],
 );
 
-// PAOLR · the page's Anchor for this graphiteScribeName. Keys on isAnchor (authoritative
-// page-bound session), NOT "any alive graphiteScribe match" — mirror CadmiumLanding / STSC.
+// C880 ref hoisted above the D-AFS block — the focus watchers evaluate their source at registration (TDZ guard).
+const originScpName = ref<string>('');
+// ============================================================
+// D-AFS · THE ANCHOR FOCUS — SPECIFIED (the own citizen · the Anchor Scope Law client
+// half · ACTIVE). The LOCAL cross-citizen tabbing is PRUNED to a disabled teaser chip —
+// the full design holds at Cascades/Working/RD-ANCHOR-FOCUS-LOCAL.md for re-entry
+// (the server record fields + the ?scpName= proxy + listS8AnchorsByScp remain landed).
+// ============================================================
+// The focused citizen = the page's OWN citizen (originScpName · C880 — resolves via
+// /scp-config; '' pre-resolve → undefined = transitional designation-wide match).
+const focusedAnchorScpName = computed<string | undefined>(() => originScpName.value || undefined);
+// Own-citizen session matcher for the SOE/re-engage polls (spawn machinery is ALWAYS
+// own-citizen; a poll must never settle on another SCP's row).
+function matchesOwnCitizen(s: ScsBridgeSessionEntry): boolean {
+  const own = originScpName.value;
+  return own ? (s.scpName ?? null) === own : true;
+}
+
+// PAOLR · the page's Anchor for this graphiteScribeName — scoped to the FOCUSED citizen (D-AFS).
+// Keys on isAnchor (authoritative page-bound session), NOT "any alive graphiteScribe match".
 const anchor = computed<ScsBridgeSessionEntry | undefined>(() =>
-  resolveS8Anchor(sessionsList.value, props.graphiteScribeName),
+  resolveS8Anchor(sessionsList.value, props.graphiteScribeName, focusedAnchorScpName.value),
 );
 
 // S6 GUARD · the Anchor must be ALIVE ('launched') to receive any option dispatch.
@@ -387,6 +405,8 @@ onMounted(() => {
   // stale-at-mount (visually disabled while the behavior followed the file).
   window.addEventListener('focus', refreshS8ModeFromDisk);
   document.addEventListener('visibilitychange', refreshS8ModeOnVisible);
+  // D-AFS · resolve the own citizen early — the focused-anchor scope needs it at render.
+  void ensureOriginScpName();
   void fetch(s8AnchorSpawnPath(props.graphiteScribeName))
     .then((r) => (r.ok ? r.json() : { anchorSpawn: 'prompt' }))
     .then((j: { anchorSpawn?: string }) => {
@@ -505,6 +525,10 @@ async function toggleAutoMode(): Promise<void> {
     /* toggle best-effort · the pill reflects only a confirmed write */
   }
 }
+
+// D-AFS · the Local toggle/select/foreign-stage machinery is PRUNED — the full design
+// holds at Cascades/Working/RD-ANCHOR-FOCUS-LOCAL.md (the teaser chip below is the
+// only remaining surface; the server rail + the ?scpName= proxy stay landed for re-entry).
 
 async function toggleAnchorSpawnMode(): Promise<void> {
   const next = anchorSpawnMode.value === 'auto' ? 'prompt' : 'auto';
@@ -627,7 +651,7 @@ watch(settledAnchorStatus, (nowStatus, prevStatus) => {
 // C880 · THE SPAWN-ORIGIN THREAD — the page's OWN citizen (GET /scp-config → scpName ·
 // the FKIS precedent). Passed as triggerSpawnS8Session arg 2 so the bridge minds the
 // RIGHT SCP (the Pewter template-origin confusion class).
-const originScpName = ref<string>('');
+// (originScpName ref moved above the D-AFS block — see hoist comment there.)
 async function ensureOriginScpName(): Promise<string> {
   if (originScpName.value) return originScpName.value;
   try {
@@ -651,6 +675,15 @@ async function handleSpawnAnchor(): Promise<void> {
   spawning.value = true;
   console.log('[ShatteriteMenu SOE] spawn + anchor · graphiteScribeName=', props.graphiteScribeName);
 
+  // D-AFS2 · THE NEWBORN SCOPE (the plain-session anchor-steal wound): snapshot the session
+  // ids BEFORE the spawn — the poll and its timeout fallback may only settle on a session
+  // BORN OF THIS SPAWN. Under the Spawn-Lane Contract, plain (never-anchored) sessions of
+  // the same designation now linger legitimately; the old any-unanchored fallback grabbed
+  // one and set-anchored it — an Onboard-less session promoted to anchor with no priming.
+  // An elder is NEVER a fallback candidate; no newborn → wait honestly (the registry claim
+  // at spawn stands server-side).
+  const priorSessionIds = new Set(sessionsList.value.map((s) => s.id));
+
   // Spawn — the bridge claimAnchorIfUnclaimed auto-anchors the new session to this page.
   // C373 · triggerSpawnS8Session (rename-proof alias) — survives the graphiteScribe:page domain-token rewrite.
   const origin = await ensureOriginScpName();
@@ -666,8 +699,10 @@ async function handleSpawnAnchor(): Promise<void> {
       elapsedMs += SOE_STEP_MS;
       const sessions = sessionsList.value;
       // (1) launched anchor present → focus the Terminal, clear the poll, done.
+      // D-AFS · own-citizen scoped — the poll must never settle on another SCP's row.
+      // D-AFS2 · newborn scoped — nor on any session that predates this spawn.
       const live = sessions.find(
-        (s) => s.graphiteScribeName === props.graphiteScribeName && s.isAnchor === true && s.status === 'launched',
+        (s) => s.graphiteScribeName === props.graphiteScribeName && matchesOwnCitizen(s) && !priorSessionIds.has(s.id) && s.isAnchor === true && s.status === 'launched',
       );
       if (live) {
         if (spawnPoll) { clearInterval(spawnPoll); spawnPoll = null; }
@@ -682,8 +717,10 @@ async function handleSpawnAnchor(): Promise<void> {
       // scope-clear wipes the prior). Only set-anchor when there is genuinely NO existing anchor.
       if (elapsedMs >= SOE_MAX_MS) {
         if (spawnPoll) { clearInterval(spawnPoll); spawnPoll = null; }
-        const existingAnchor = sessions.find((s) => s.graphiteScribeName === props.graphiteScribeName && s.isAnchor === true);
-        const unanchored = sessions.find((s) => s.graphiteScribeName === props.graphiteScribeName && !s.isAnchor);
+        const existingAnchor = sessions.find((s) => s.graphiteScribeName === props.graphiteScribeName && matchesOwnCitizen(s) && s.isAnchor === true);
+        // D-AFS2 · the fallback set-anchor candidate MUST be the newborn — an elder plain
+        // session is never promoted (the anchor-steal wound). No newborn → no action.
+        const unanchored = sessions.find((s) => s.graphiteScribeName === props.graphiteScribeName && matchesOwnCitizen(s) && !priorSessionIds.has(s.id) && !s.isAnchor);
         if (existingAnchor) {
           console.log('[ShatteriteMenu SOE] fallback · existing anchor present → re-engage (NO steal) · anchorId=', existingAnchor.id);
           ctrl.triggerEngageSession(existingAnchor.id);
@@ -749,7 +786,7 @@ async function handleReengageAnchor(): Promise<void> {
   reengagePoll = setInterval(() => {
     elapsedMs += REENGAGE_STEP_MS;
     const live = sessionsList.value.find(
-      (s) => s.graphiteScribeName === props.graphiteScribeName && s.isAnchor === true && s.status === 'launched',
+      (s) => s.graphiteScribeName === props.graphiteScribeName && matchesOwnCitizen(s) && s.isAnchor === true && s.status === 'launched',
     );
     if (live) {
       if (reengagePoll) { clearInterval(reengagePoll); reengagePoll = null; }
@@ -1145,6 +1182,19 @@ async function handleSubmit(option: MenuOption, i: number): Promise<void> {
         @click="toggleAutoMode"
       >
         Auto Mode: {{ autoModeEnabled ? 'ON' : 'OFF' }}
+      </button>
+      <!-- D-AFS · THE ANCHOR FOCUS TEASER — the disabled fixture. Specified (the own
+           citizen) is the active law; LOCAL cross-citizen tabbing is a coming refinement
+           (the design holds at RD-ANCHOR-FOCUS-LOCAL). Standard :disabled idiom — the
+           virtual cursor carries no disabled variant yet (seated in the RD). -->
+      <button
+        v-if="isAnchorAuthority"
+        class="menu-anchorfocus-toggle"
+        data-testid="menu-anchorfocus-toggle"
+        disabled
+        title="Anchor focus — Specified (this page's own citizen). LOCAL cross-citizen tabbing is a coming refinement."
+      >
+        Anchor: Specified
       </button>
       <p v-if="hasStage && effectiveStage.prompt" class="menu-prompt">{{ effectiveStage.prompt }}</p>
       <span :class="['menu-status', anchorAlive ? 'menu-status-alive' : 'menu-status-waiting']">
@@ -1827,5 +1877,25 @@ async function handleSubmit(option: MenuOption, i: number): Promise<void> {
 .menu-automode-toggle.automode-on {
   border-color: var(--color-yellow);
   color: var(--color-yellow);
+}
+/* D-AFS · the Anchor Focus TEASER chip (the toggle family's shape · disabled fixture —
+   the standard :disabled idiom per style.css .hifi-btn:disabled; the Local design holds
+   at RD-ANCHOR-FOCUS-LOCAL for re-entry). */
+.menu-anchorfocus-toggle {
+  margin-left: auto;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.menu-anchorfocus-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

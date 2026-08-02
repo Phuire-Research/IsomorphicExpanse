@@ -280,15 +280,15 @@ pattern, read once:
    see `(resolved at call time)`, the bridge was not running at spawn → skip the refocus; your
    menu still renders.)
 
-2. **POST the `tools/call` envelope** to `{{BRIDGE_ENDPOINT}}/mcp`. `scs_focus_bridge_window` takes
-   NO required arguments (the bridge resolves the active SCP window server-side — it focuses the
-   page you are bound to):
+2. **POST the `tools/call` envelope** to `{{BRIDGE_ENDPOINT}}/mcp`. Pass YOUR OWN citizen as
+   `scpName` — you know it from this spawn (`{{SCP_NAME}}`); the shared bridge muxium carries
+   no per-SCP environment, so an argument-less call cannot know which page bound you:
 
    ```bash
    curl -s -X POST "{{BRIDGE_ENDPOINT}}/mcp" \
      -H 'Content-Type: application/json' \
      -H 'Accept: application/json, text/event-stream' \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"scs_focus_bridge_window","arguments":{}}}'
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"scs_focus_bridge_window","arguments":{"scpName":"{{SCP_NAME}}"}}}'
    ```
 
 3. **Confirm + continue** — refocus is a convenience, not a gate. On success the user's window

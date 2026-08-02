@@ -28,13 +28,33 @@ export type S8SessionLike = {
   scpName?: string;
 };
 
-/** The page's Anchor: the session bound to this designation with isAnchor (authoritative). */
+/** The page's Anchor: the session bound to this designation with isAnchor (authoritative).
+ *  D-AFS · THE ANCHOR SCOPE — optional scpName narrows to ONE citizen's anchor (the Anchor
+ *  Scope Law client half: anchor identity = (suite8Name, scpName)). Omitted = legacy
+ *  designation-wide first-match (transitional callers only — scope where possible). */
 export function resolveS8Anchor<T extends S8SessionLike>(
   sessions: T[] | null | undefined,
   designation: string,
+  scpName?: string,
 ): T | undefined {
   if (!sessions || !designation) return undefined;
-  return sessions.find((s) => s.suite8Name === designation && s.isAnchor === true);
+  return sessions.find(
+    (s) =>
+      s.suite8Name === designation &&
+      (scpName === undefined || (s.scpName ?? null) === scpName) &&
+      s.isAnchor === true,
+  );
+}
+
+/** D-AFS · the per-citizen anchor roster for a designation — the Local tab strip's ground.
+ *  Every isAnchor row for the designation (one per citizen under the Anchor Scope Law);
+ *  tab labels render from each row's scpName. */
+export function listS8AnchorsByScp<T extends S8SessionLike>(
+  sessions: T[] | null | undefined,
+  designation: string,
+): T[] {
+  if (!sessions || !designation) return [];
+  return sessions.filter((s) => s.suite8Name === designation && s.isAnchor === true);
 }
 
 /** A LIVE session for this designation (status launched · optional scpName narrowing). */

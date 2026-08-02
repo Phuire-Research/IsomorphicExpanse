@@ -195,7 +195,17 @@ export type ScsBridgeController = {
   // than re-engaging an OFFLINE one.
   // D-UP · manualMode (5th arg · default false) · true = fresh-worker spawn WITHOUT the
   // auto-permission marker (approval gate intact + Stand By overlay) — the Gitm Resolver's flag.
-  triggerSpawnSuite8Session: (suite8Name: string, scpName?: string | null, asWorker?: boolean, fresh?: boolean, manualMode?: boolean) => void;
+  // RS.2b · initialDirective (6th arg) · a per-run SCS:Vermillion anchor composed at spawn time —
+  // the bridge appends it to the Onboard seed as ONE initial positional prompt (no post-boot
+  // typed delivery to race a mid-turn input; the standBy overlay arm is skipped when present).
+  // THE ONBOARD OPTION · onboard (7th arg · default true) · false = suppress the Onboard seed
+  // for THIS spawn (the initialDirective, when present, rides alone) — callers with their own seed.
+  // THE PLAIN-SPAWN LANE · anchor (8th arg · default true) · false = a plain instance (the
+  // bridge skips the whole anchor machinery) — the Session Manager's default Suite 8 spawn.
+  // THE SOVEREIGN SPAWN BINDING · scpName omitted/null → the controller resolves the OWN
+  // citizen (/scp-config · cached) before threading — the C857 first-found probe never fires
+  // from a page-side spawn.
+  triggerSpawnSuite8Session: (suite8Name: string, scpName?: string | null, asWorker?: boolean, fresh?: boolean, manualMode?: boolean, initialDirective?: string, onboard?: boolean, anchor?: boolean) => void;
   // C373 · THE RENAME-PROOF ALIAS · same signature as triggerSpawnSuite8Session; ONE implementation,
   // two names. The `suite8:page` pipeline recursively find-replaces `Suite8`→`{Domain}` /
   // `suite8`→`{domainLower}` across EVERY .ts/.vue in the copied concept dir (suite8PageCreate.ts
@@ -588,8 +598,8 @@ export function createScsBridgeController(): ScsBridgeController {
   // is reserved for a future SCP-bound spawn lane (C1 spawns Template SCP default).
   // D-UP · manualMode (5th param) = fresh-worker spawn WITHOUT the auto-permission marker —
   // approval gate intact + the Stand By overlay on the primed session (the Gitm Resolver's flag).
-  const triggerSpawnSuite8Session = (suite8Name: string, scpName?: string | null, asWorker = false, fresh = false, manualMode = false): void => {
-    console.log('[ScsBridgeController] triggerSpawnSuite8Session · suite8Name=', suite8Name, '· scpName=', scpName ?? null, '· asWorker=', asWorker, '· fresh=', fresh, '· manualMode=', manualMode);
+  const triggerSpawnSuite8Session = (suite8Name: string, scpName?: string | null, asWorker = false, fresh = false, manualMode = false, initialDirective?: string, onboard = true, anchor = true): void => {
+    console.log('[ScsBridgeController] triggerSpawnSuite8Session · suite8Name=', suite8Name, '· scpName=', scpName ?? null, '· asWorker=', asWorker, '· fresh=', fresh, '· manualMode=', manualMode, '· initialDirectiveChars=', initialDirective?.length ?? 0, '· onboard=', onboard, '· anchor=', anchor);
     // C375 · THE ENGAGE AWAIT HARDENING · the S4 prescription — one loud line naming the Muxium state
     // BEFORE the try, so the relay pins whether the Engage reached a LIVE controller or a detached one.
     console.log('[ScsBridgeController] triggerSpawnSuite8Session · currentMuxium=', currentMuxium ? 'LIVE' : 'NULL');
@@ -599,28 +609,45 @@ export function createScsBridgeController(): ScsBridgeController {
       );
       return;
     }
-    try {
-      const mux = currentMuxium as Muxium<any>;
-      const deck: any = (mux as any).deck;
-      // C373 · THE SCP THREAD · carry scpName into the trigger payload (was dropped) so the
-      // InvokeSpawnSuite8 principle can thread it into the MCP scs_spawn_suite8_session args →
-      // the Forge anchor lands on the CALLER's SCP, not the workspace default cwd. Only thread when
-      // a non-null scpName is supplied (omit → bridge resolves the SCP dir, prior behaviour).
-      const action: AnyAction = deck.d.client.d.scsBridge.e.scsBridgeSetPendingSpawnSuite8Name({
-        suite8Name,
-        asWorker,
-        ...(scpName ? { scpName } : {}),
-        // C386 · thread fresh ONLY when true (omit for the ordinary anchor path → the bridge default
-        // offline→re-engage). The InvokeSpawnSuite8 principle reads pendingSpawnSuite8Fresh at fire-time.
-        ...(fresh ? { fresh: true } : {}),
-        // D-UP · thread manualMode ONLY when true (the Gitm Resolver's user-controlled spawn).
-        ...(manualMode ? { manualMode: true } : {}),
-      });
-      mux.dispatch(action);
-      console.log('[ScsBridgeController] triggerSpawnSuite8Session dispatched · trigger field set · asWorker=', asWorker, '· scpName=', scpName ?? null, '· fresh=', fresh);
-    } catch (err) {
-      console.error('[ScsBridgeController] triggerSpawnSuite8Session dispatch failed:', err);
-    }
+    // THE SOVEREIGN SPAWN BINDING (the TestingAFrontier field catch): a spawn with NO scpName
+    // forces the bridge's C857 first-found designation probe — under a designation collision
+    // (two citizens carrying the same Suite 8) the session binds the WRONG citizen and its
+    // writes land in the wrong Extended. Every page-side spawn KNOWS its own citizen via
+    // /scp-config (cached · the FKIS origin seam) — resolve it here so no caller can spawn
+    // unbound. An explicit scpName still wins (the Update view passes its own).
+    void (async (): Promise<void> => {
+      const sovereignScpName = scpName ?? (await resolveScpName()) ?? null;
+      if (!currentMuxium) return; // re-check across the await — the Muxium may have detached
+      try {
+        const mux = currentMuxium as Muxium<any>;
+        const deck: any = (mux as any).deck;
+        // C373 · THE SCP THREAD · carry scpName into the trigger payload so the
+        // InvokeSpawnSuite8 principle threads it into the MCP scs_spawn_suite8_session args.
+        const action: AnyAction = deck.d.client.d.scsBridge.e.scsBridgeSetPendingSpawnSuite8Name({
+          suite8Name,
+          asWorker,
+          ...(sovereignScpName ? { scpName: sovereignScpName } : {}),
+          // C386 · thread fresh ONLY when true (omit for the ordinary anchor path → the bridge default
+          // offline→re-engage). The InvokeSpawnSuite8 principle reads pendingSpawnSuite8Fresh at fire-time.
+          ...(fresh ? { fresh: true } : {}),
+          // D-UP · thread manualMode ONLY when true (the Gitm Resolver's user-controlled spawn).
+          ...(manualMode ? { manualMode: true } : {}),
+          // RS.2b · thread the per-run anchor ONLY when supplied (→ the InvokeSpawnSuite8
+          // principle → MCP initialDirective → the bridge composes it into the initial entry).
+          ...(initialDirective ? { initialDirective } : {}),
+          // THE ONBOARD OPTION · thread ONLY the explicit false (default true = omit → the
+          // Onboard rides per the anchor predicate, unchanged).
+          ...(onboard === false ? { onboard: false } : {}),
+          // THE PLAIN-SPAWN LANE · thread ONLY the explicit false (default true = omit → the
+          // anchor lane, unchanged — the page/Shatterite Menu door).
+          ...(anchor === false ? { anchor: false } : {}),
+        });
+        mux.dispatch(action);
+        console.log('[ScsBridgeController] triggerSpawnSuite8Session dispatched · trigger field set · asWorker=', asWorker, '· scpName=', sovereignScpName, '· fresh=', fresh, '· anchor=', anchor);
+      } catch (err) {
+        console.error('[ScsBridgeController] triggerSpawnSuite8Session dispatch failed:', err);
+      }
+    })();
   };
 
   // C373 · THE RENAME-PROOF ALIAS · the `s8` token survives the `suite8:page` domain-token rewrite

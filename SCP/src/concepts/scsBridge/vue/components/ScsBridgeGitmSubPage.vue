@@ -830,61 +830,21 @@ const canSpawnResolver = computed<boolean>(() => {
 const resolverStatusText = computed<string>(() => {
   switch (resolverPhase.value) {
     case 'spawning':   return 'Starting resolver session…';
-    case 'waiting':    return 'Waiting for the resolver to come online…';
-    case 'delivering': return 'Claude Code is initializing (Stand By shown on the session) — handing instructions…';
-    case 'done':       return 'Resolver session started.';
+    case 'done':       return 'Resolver session started — instructions ride the first entry.';
     case 'error':      return `Error: ${resolverError.value}`;
     default:           return '';
   }
 });
 
-// Watch the session list for the new resolver row; on arrival deliver the directive.
-watch(
-  () => sessionsList.value.length,
-  async (newLen) => {
-    if (resolverPhase.value !== 'waiting') return;
-    if (newLen <= sessionCountAtSpawn.value) return;
-
-    // The most-recently-spawned Gitm Resolver row.
-    const resolverRows = sessionsList.value.filter(
-      (s) => (s as { suite8Name?: string }).suite8Name === 'Gitm Resolver',
-    );
-    const newest = [...(resolverRows.length > 0 ? resolverRows : sessionsList.value)].sort(
-      (a, b) => ((b.spawnedAt ?? 0) > (a.spawnedAt ?? 0) ? 1 : -1),
-    )[0];
-
-    if (!newest) {
-      resolverPhase.value = 'error';
-      resolverError.value = 'Resolver session started but its row could not be found.';
-      return;
-    }
-
-    resolverSessionId.value = newest.id;
-    resolverPhase.value = 'delivering';
-
-    // C285 · THE CLAUDE-CODE INIT BACKOFF (the 079 mid-boot interleave): the session row
-    // appears at the PTY's FIRST byte — Claude Code itself boots for several more seconds
-    // (welcome banner + tips). Delivering immediately splits the directive: early chars land
-    // in the raw terminal, the rest buffer into the half-initialized input, and the submit
-    // dies. The bridge-side readiness ping gates the CHANNEL; this backoff gates the APP.
-    // D-UP · shortened 9s → 6s: the session's own Stand By overlay (the manualMode spawn arms
-    // it; the delivery clears it) now carries the wait honestly, and 6s still clears CC's
-    // interactive prompt on current boots. The pragmatic-delay doctrine holds.
-    await new Promise<void>((r) => setTimeout(r, 6000));
-
-    const scpName = props.gitmJson?.updateStatus.scpName ?? '';
-    const diffJsonPath = `Cascades/Bridge/scp-update-diff.${scpName}.json`;
-    const directive = buildGitmResolverVermillion(scpName, diffJsonPath);
-
-    const result = await controller.value?.triggerDeliverVermillion(newest.id, directive);
-    if (result?.ok) {
-      resolverPhase.value = 'done';
-    } else {
-      resolverPhase.value = 'error';
-      resolverError.value = result?.error ?? 'The resolver instructions could not be delivered.';
-    }
-  },
-);
+// RS.2b · THE COMBINED INITIAL ENTRY — the post-spawn delivery watcher is RETIRED.
+// The field capture proved the C285 interleave class re-entered through the Onboard seed:
+// the 6s backoff gated the APP BOOT, but the Onboard turn was new work between boot and
+// delivery — the typed delivery landed on a mid-turn input and fragmented. Every anchor
+// parameter derives from scpName at SPAWN time, so the anchor now rides the spawn itself
+// (triggerSpawnSuite8Session 6th arg → registry entry → cli-handler composes Onboard +
+// anchor as ONE initial positional prompt). No delivery → no race → no backoff → the
+// standBy overlay arm is skipped bridge-side. triggerDeliverVermillion remains for
+// genuine mid-session directives only.
 
 function spawnResolver(): void {
   if (!canSpawnResolver.value) return;
@@ -896,20 +856,25 @@ function spawnResolver(): void {
   }
 
   const scpName = props.gitmJson?.updateStatus.scpName ?? '';
+  const diffJsonPath = `Cascades/Bridge/scp-update-diff.${scpName}.json`;
+  // The intent anchor is built HERE — frozen at spawn time from the same rail read the
+  // spawn itself uses (no delivery-time re-read to drift against).
+  const directive = buildGitmResolverVermillion(scpName, diffJsonPath);
   sessionCountAtSpawn.value = sessionsList.value.length;
   resolverPhase.value = 'spawning';
 
   // D-UP · asWorker=true (fresh worker · anti-flood skipped so repeat updates always spawn) +
   // manualMode=true (NO auto-permission — the update is user-controlled; Claude Code's approval
-  // gate stays intact) + the bridge arms the session's Stand By overlay until delivery lands.
-  ctrl.triggerSpawnSuite8Session('Gitm Resolver', scpName, true, false, true);
+  // gate stays intact). RS.2b · the anchor rides as the 6th arg — one initial entry.
+  ctrl.triggerSpawnSuite8Session('Gitm Resolver', scpName, true, false, true, directive);
 
-  // SIGR auto-clear — once the spawn ack lands (isSpawningSuite8 → false) advance to waiting.
+  // SIGR auto-clear — once the spawn ack lands (isSpawningSuite8 → false) the hand-off is
+  // complete: the bridge carries the composed initial entry; nothing further to deliver.
   const sigRWatcher = watch(
     () => isSpawningSuite8.value,
     (nowSpawning) => {
       if (!nowSpawning && resolverPhase.value === 'spawning') {
-        resolverPhase.value = 'waiting';
+        resolverPhase.value = 'done';
         sigRWatcher();
       }
     },

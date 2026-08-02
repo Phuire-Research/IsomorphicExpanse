@@ -1116,13 +1116,45 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     return typeof s.stageIndex === 'number' && typeof s.title === 'string' && Array.isArray(s.options);
   };
   expressApp.get('/suite8-menu/:designation', (req, res) => {
-    const resolved = resolveExtendedDesignationDir(req.params.designation);
-    if (!resolved) {
-      res.status(404).json({ ok: false, error: 'designation menu not found' });
-      return;
+    // D-AFS · THE CROSS-CITIZEN READ (?scpName=) — Local anchor focus renders ANOTHER
+    // citizen's stage. The R3 law holds (no sibling HTTP): the FOREIGN root resolves via
+    // this SCP's OWN sovereign bridge.json boundScps[scpName].dir (the MD-1 picker
+    // precedent — a filesystem read, existence-checked), then the designation resolves
+    // STRICTLY INSIDE that citizen's Extended (the same traversal guard idiom).
+    const foreignScpName = typeof req.query.scpName === 'string' ? req.query.scpName : undefined;
+    let menuDir: string | null = null;
+    if (foreignScpName !== undefined) {
+      try {
+        const ownBridgeJsonPath = path.resolve(process.cwd(), 'Cascades', 'Bridge', 'bridge.json');
+        const bridgeMeta = JSON.parse(fs.readFileSync(ownBridgeJsonPath, 'utf-8')) as {
+          boundScps?: Record<string, { dir?: string }>;
+        };
+        const foreignDir = bridgeMeta.boundScps?.[foreignScpName]?.dir;
+        if (typeof foreignDir !== 'string' || foreignDir.length === 0) {
+          res.status(404).json({ ok: false, error: 'scpName not bound' });
+          return;
+        }
+        const foreignExtendedBase = path.resolve(foreignDir, 'Cascades', 'Extended');
+        const candidate = path.resolve(foreignExtendedBase, req.params.designation);
+        if (candidate === foreignExtendedBase || !candidate.startsWith(foreignExtendedBase + path.sep)) {
+          res.status(403).end();
+          return;
+        }
+        menuDir = candidate;
+      } catch {
+        res.status(404).json({ ok: false, error: 'bridge.json unreadable · foreign read unavailable' });
+        return;
+      }
+    } else {
+      const resolved = resolveExtendedDesignationDir(req.params.designation);
+      if (!resolved) {
+        res.status(404).json({ ok: false, error: 'designation menu not found' });
+        return;
+      }
+      menuDir = resolved.dir;
     }
     try {
-      const raw = fs.readFileSync(path.resolve(resolved.dir, 'menu.json'), 'utf-8');
+      const raw = fs.readFileSync(path.resolve(menuDir, 'menu.json'), 'utf-8');
       const parsed = JSON.parse(raw) as Record<string, unknown>;
       if (Array.isArray(parsed.stages)) {
         const stages = (parsed.stages as unknown[]).filter(validateMenuStageShape);
@@ -1827,7 +1859,18 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       const parsed = JSON.parse(raw);
       const mode = parsed && parsed.anchorSpawn === 'auto' ? 'auto' : 'prompt';
       // C772 · W4 — autoMode rides the same S8.json rail (the HiFi-yellow toggle's truth).
-      res.json({ anchorSpawn: mode, autoMode: parsed && parsed.autoMode === true });
+      // D-AFS · anchorFocus ('specified'|'local') + localAnchorScpName ride the same rail —
+      // the recorded Anchor Focus Selector (like Auto-Spawn/Auto Mode · survives reloads and
+      // worktree re-opens).
+      res.json({
+        anchorSpawn: mode,
+        autoMode: parsed && parsed.autoMode === true,
+        anchorFocus: parsed && parsed.anchorFocus === 'local' ? 'local' : 'specified',
+        localAnchorScpName:
+          parsed && typeof parsed.localAnchorScpName === 'string' && parsed.localAnchorScpName.length > 0
+            ? parsed.localAnchorScpName
+            : null,
+      });
       return;
     } catch { /* S8.json absent → legacy fallback below */ }
     const cascadeJsonPath = path.resolve(designationDir, 'Cascade.json');
@@ -1855,13 +1898,18 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       res.status(403).end();
       return;
     }
-    const body = (req.body ?? {}) as { anchorSpawn?: unknown; autoMode?: unknown };
+    const body = (req.body ?? {}) as { anchorSpawn?: unknown; autoMode?: unknown; anchorFocus?: unknown; localAnchorScpName?: unknown };
     const nextMode = body.anchorSpawn;
     const nextAuto = body.autoMode;
+    // D-AFS · the Anchor Focus Selector record — same rail, same read-modify-write.
+    const nextFocus = body.anchorFocus;
+    const nextLocalScp = body.localAnchorScpName;
     const hasMode = nextMode === 'auto' || nextMode === 'prompt';
     const hasAuto = typeof nextAuto === 'boolean';
-    if (!hasMode && !hasAuto) {
-      res.status(400).json({ ok: false, error: 'anchorSpawn (auto|prompt) anor autoMode (boolean) required' });
+    const hasFocus = nextFocus === 'specified' || nextFocus === 'local';
+    const hasLocalScp = typeof nextLocalScp === 'string' || nextLocalScp === null;
+    if (!hasMode && !hasAuto && !hasFocus && !hasLocalScp) {
+      res.status(400).json({ ok: false, error: 'anchorSpawn (auto|prompt) anor autoMode (boolean) anor anchorFocus (specified|local) anor localAnchorScpName (string|null) required' });
       return;
     }
     // C481 · write the FILESYSTEM ANCHOR — the SCP-local Extended S8.json (born on first
@@ -1879,6 +1927,12 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       // C772 · W4 — write only the supplied fields (either toggle updates its own).
       if (hasMode) parsed.anchorSpawn = nextMode;
       if (hasAuto) parsed.autoMode = nextAuto;
+      // D-AFS · the focus record writes its own fields; null clears the local selection.
+      if (hasFocus) parsed.anchorFocus = nextFocus;
+      if (hasLocalScp) {
+        if (nextLocalScp === null) delete parsed.localAnchorScpName;
+        else parsed.localAnchorScpName = nextLocalScp;
+      }
       fs.writeFileSync(s8JsonPath, JSON.stringify(parsed, null, 2), 'utf-8');
       res.json({ ok: true, anchorSpawn: nextMode });
     } catch (err) {

@@ -478,10 +478,7 @@ function handleKeydown(e: KeyboardEvent): void {
 // in the data (D-SSP.1 omitted it), so per Pewter's degrade-graceful contract the
 // page-less DOT/caption is OFF in v1; every hasInstance:true entry is spawnable.
 
-// Drawer expand state (collapsed by default · costs one header line at rest).
-const s8PickerOpen = ref<boolean>(false);
-
-// Single-select roster choice (suite8 name · null = no selection). Mirrors the
+// Single-select choice (suite8 name · null = no selection). Mirrors the
 // component's expandedSessionId / relayTargetSessionId single-select discipline.
 const selectedSpawnSuite8Name = ref<string | null>(null);
 
@@ -497,67 +494,72 @@ const s8PickerLoading = computed<boolean>(
     availableSuite8s.value.length === 0,
 );
 
-// Drawer head gates on connection parity with the primary Spawn button (canSpawn).
-const s8PickerHeadDisabled = computed<boolean>(
-  () => (controller?.connectionEstablished.value ?? false) !== true,
-);
-
 // Dynamic Spawn-button label echoes the selection (mirrors spawnButtonLabel).
 const s8SpawnButtonLabel = computed<string>(() => {
   if (isSpawningSuite8.value) return 'Spawning…';
   // MD-9 · D-MC-3 · the S8 spawn button NOTES the selected model too (e.g. "Spawn Foo · Opus 4.8").
   const modelNote = ` · ${selectedModelLabel.value}`;
   if (selectedSpawnSuite8Name.value) return `Spawn ${selectedSpawnSuite8Name.value}${modelNote}`;
-  return `Spawn a Suite 8${modelNote}`;
+  return `Spawn Suite 8${modelNote}`;
 });
 
 // Spawnable filter: only hasInstance:true entries can spawn (Teal Claude · no
-// Instance.md → not spawnable). The select handler ignores non-spawnable rows.
+// Instance.md → not spawnable).
 function isSuite8Spawnable(entry: Suite8PickerEntry): boolean {
   return entry.hasInstance === true;
 }
 
-// Drawer toggle. On open, refresh the roster so a newly-added Suite 8 appears.
-function toggleS8Picker(): void {
-  if (s8PickerHeadDisabled.value) return;
-  s8PickerOpen.value = !s8PickerOpen.value;
-  if (s8PickerOpen.value) {
-    console.log('[SCS-Bridge SSP] picker open · refreshing roster');
-    void controller?.fetchAvailableSuite8s();
-  }
-}
+// THE SUITE 8 DROPDOWN (Pewter · the ScsDropdown idiom the Model row proved — in-DOM,
+// offscreen-safe; the SSP drawer roster is RETIRED in its favor). Spawnable entries
+// only; the snippet rides as the row title (hover blurb). Selecting ENABLES the
+// Spawn Suite 8 button below — selection and spawn are two deliberate steps.
+const suite8DropdownOptions = computed(() =>
+  availableSuite8s.value
+    .filter(isSuite8Spawnable)
+    .map((e) => ({ value: e.name, label: e.name, title: e.snippet || undefined })),
+);
 
-// Roster row single-select toggle (spawnable rows only).
-function selectSpawnSuite8(entry: Suite8PickerEntry): void {
-  if (!isSuite8Spawnable(entry)) return;
+// Dropdown change → single-select state (the emit is string | undefined per the
+// ScsDropdown contract; rows carry real names — the placeholder is the no-selection
+// rendering, so empty/undefined both resolve to null).
+function onSuite8DropdownChange(name: string | undefined): void {
   if (isSpawningSuite8.value) return;
-  selectedSpawnSuite8Name.value =
-    selectedSpawnSuite8Name.value === entry.name ? null : entry.name;
+  selectedSpawnSuite8Name.value = name !== undefined && name.length > 0 ? name : null;
   console.log('[SCS-Bridge SSP] select · name=', selectedSpawnSuite8Name.value);
 }
 
-// Spawn handler · reuses the SBST exactly as Suite8OnDemand.vue:217. Gated by the
-// isSpawningSuite8 SIGR; the SIGR-reset watcher (below) clears the in-flight state.
+// Roster freshness — the retired drawer refreshed on open; the dropdown row refreshes
+// on interaction intent (mousedown on the wrapper) so a newly-added Suite 8 appears.
+function refreshS8Roster(): void {
+  void controller?.fetchAvailableSuite8s();
+}
+
+// Spawn handler · THE SPAWN-LANE CONTRACT (the TestingAFrontier field catch): the Session
+// Manager's default Suite 8 spawn is the PLAIN lane — onboard:false (the seed is specific
+// to the point of calling: the page/Shatterite Menu anchor + the Gitm Resolver keep it) +
+// anchor:false (anchoring belongs to the Shatterite Menu system FIRST — an SM spawn never
+// claims a page's anchor; a future SM anchor-toggle may opt in on its own terms). scpName
+// omitted → the controller's Sovereign Spawn Binding resolves the OWN citizen, so the
+// C857 first-found probe never mis-binds under a designation collision.
 function handleSpawnSuite8(): void {
   if (isSpawningSuite8.value) return;
   const name = selectedSpawnSuite8Name.value;
   if (!name) return;
-  console.log('[SCS-Bridge SSP] handleSpawnSuite8 · name=', name);
-  controller?.triggerSpawnSuite8Session(name);
+  console.log('[SCS-Bridge SSP] handleSpawnSuite8 · name=', name, '· lane=plain (onboard:false · anchor:false)');
+  controller?.triggerSpawnSuite8Session(name, undefined, false, false, false, undefined, false, false);
 }
 
 // SSP · SIGR-reset watcher · mirrors Suite8OnDemand.vue's spawning→idle transition.
 // When the new session row arrives (sessionsList grows), the existing SIGR watcher
 // at line ~261 releases isSpawning (the general lane). For the Suite-8 lane we clear
-// the picker selection + auto-collapse on isSpawningSuite8 falling back to idle, so
-// the picker returns to rest and the spawned session lands in the list below.
+// the selection on isSpawningSuite8 falling back to idle, so the dropdown returns to
+// its placeholder and the spawned session lands in the list below.
 watch(
   () => isSpawningSuite8.value,
   (nowSpawning, wasSpawning) => {
     if (wasSpawning && !nowSpawning) {
-      console.log('[SCS-Bridge SSP] SIGR reset · spawn complete · collapsing picker');
+      console.log('[SCS-Bridge SSP] SIGR reset · spawn complete · clearing selection');
       selectedSpawnSuite8Name.value = null;
-      s8PickerOpen.value = false;
     }
   },
 );
@@ -821,7 +823,9 @@ const spawnButtonLabel = computed<string>(() => {
   const modelNote = ` · ${selectedModelLabel.value}`;
   if (isSpecificMode.value && s8Designation.value) return `+ Spawn ${s8Designation.value}${modelNote}`;
   if (activeScpFilter.value !== null) return `+ Spawn for ${activeScpFilter.value}${modelNote}`;
-  return `+ Spawn Session${modelNote}`;
+  // THE SPAWN SPLIT · "General" names the lane explicitly — the Suite 8 dropdown + its
+  // spawn button sit directly below; this button is the identity-less general session.
+  return `+ Spawn General Session${modelNote}`;
 });
 
 // D3E Diamond A · SRCR container state helper.
@@ -2019,82 +2023,45 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- SSP · D-SSP.3 · Suite-8 Spawn Picker drawer (Pewter · SSP-PEWTER-DESIGN.md §1-2).
-           Collapsed-by-default; lists EVERY spawnable Suite 8 (page-less first-class). -->
-      <div v-if="!isSpecificMode" class="s8-picker-drawer hifi-pane-base">
-        <button
-          type="button"
-          class="s8-picker-head"
-          :class="{ 'is-open': s8PickerOpen, 'is-disabled': s8PickerHeadDisabled }"
-          :disabled="s8PickerHeadDisabled"
-          :title="s8PickerHeadDisabled ? 'Connect the bridge to spawn a Suite 8.' : undefined"
-          @click="toggleS8Picker"
-        >
-          <span class="s8-picker-chevron" :class="{ 'is-open': s8PickerOpen }">▸</span>
-          <span class="s8-picker-head-label">Spawn a Suite 8</span>
-          <span
-            v-if="!s8PickerLoading"
-            class="scp-filter-pill-count s8-picker-count"
-          >{{ availableSuite8s.length }} available</span>
-        </button>
-
-        <div v-if="s8PickerOpen" class="s8-picker-body">
-          <!-- Loading state -->
-          <div v-if="s8PickerLoading" class="session-list-empty">
-            Loading available Suite 8s…
-          </div>
-
-          <!-- Empty state -->
-          <div v-else-if="availableSuite8s.length === 0" class="session-list-empty">
-            No Suite 8s found yet. Add one under your project's Suite folder and it
-            will appear here.
-          </div>
-
-          <!-- Roster -->
-          <template v-else>
-            <div class="s8-roster" :class="{ 's8-roster-inflight': isSpawningSuite8 }">
-              <button
-                v-for="entry in availableSuite8s"
-                :key="entry.name"
-                type="button"
-                class="scp-filter-pill s8-roster-row"
-                :class="{
-                  active: selectedSpawnSuite8Name === entry.name,
-                  's8-roster-row-disabled': !entry.hasInstance,
-                }"
-                :disabled="!entry.hasInstance || isSpawningSuite8"
-                @click="selectSpawnSuite8(entry)"
-              >
-                <span class="s8-roster-name">{{ entry.name }}</span>
-                <span v-if="entry.snippet" class="s8-roster-snippet">{{ entry.snippet }}</span>
-              </button>
-            </div>
-
-            <p v-if="selectedSpawnSuite8Name" class="session-mgmt-subtitle s8-selected-echo">
-              Selected: {{ selectedSpawnSuite8Name }}
-            </p>
-
-            <div class="spawn-session-row s8-spawn-row">
-              <button
-                class="spawn-session-btn"
-                :class="{ spawning: isSpawningSuite8 }"
-                :disabled="!selectedSpawnSuite8Name || isSpawningSuite8"
-                @click="handleSpawnSuite8"
-              >
-                {{ s8SpawnButtonLabel }}
-              </button>
-            </div>
-
-            <p class="session-mgmt-subtitle s8-helper">
-              <template v-if="isSpawningSuite8 && selectedSpawnSuite8Name">
-                Starting {{ selectedSpawnSuite8Name }} — it will appear in the list below.
-              </template>
-              <template v-else>
-                Opens a session you can work with from the controls below.
-              </template>
-            </p>
-          </template>
+      <!-- SSP · THE SUITE 8 DROPDOWN (Pewter · the ScsDropdown idiom the Model row proved —
+           in-DOM, offscreen-safe; the D-SSP.3 drawer roster is RETIRED in its favor).
+           Two deliberate steps: select a Suite 8 from the dropdown → the Spawn Suite 8
+           button ENABLES. Sits BELOW the general spawn ("+ Spawn General Session"). -->
+      <div v-if="!isSpecificMode" class="s8-spawn-block">
+        <div class="spawn-model-row" @mousedown="refreshS8Roster">
+          <label class="spawn-model-label">Suite 8</label>
+          <ScsDropdown
+            :options="suite8DropdownOptions"
+            :model-value="selectedSpawnSuite8Name ?? ''"
+            :placeholder="s8PickerLoading ? 'Loading Suite 8s…' : 'Select a Suite 8…'"
+            class="spawn-model-dropdown"
+            @update:model-value="onSuite8DropdownChange"
+          />
         </div>
+
+        <div class="spawn-session-row s8-spawn-row">
+          <button
+            class="spawn-session-btn"
+            :class="{ spawning: isSpawningSuite8 }"
+            :disabled="!selectedSpawnSuite8Name || isSpawningSuite8"
+            @click="handleSpawnSuite8"
+          >
+            {{ s8SpawnButtonLabel }}
+          </button>
+        </div>
+
+        <p class="session-mgmt-subtitle s8-helper">
+          <template v-if="isSpawningSuite8 && selectedSpawnSuite8Name">
+            Starting {{ selectedSpawnSuite8Name }} — it will appear in the list below.
+          </template>
+          <template v-else-if="selectedSpawnSuite8Name">
+            Spawns {{ selectedSpawnSuite8Name }} as a plain instance — the page's
+            Shatterite Menu anchors first.
+          </template>
+          <template v-else>
+            Select a Suite 8 to enable its spawn. General sessions spawn above.
+          </template>
+        </p>
       </div>
     </header>
 
@@ -4219,10 +4186,15 @@ onBeforeUnmount(() => {
 /* MD-9 · D-MC-3 · Per-Instance Model Control · the model dropdown (Pewter-neutral tooling
    chrome — the model picker is system tooling, not a suite-keyed action, so it wears the
    neutral pewter/muted treatment rather than a suite color). */
+/* THE ENLARGED SELECTION ROW · the Model + Suite 8 dropdowns each own a FULL row,
+   scaled up by 2/3 (trigger 0.75rem→1.25rem · padding 0.4/0.6rem→0.67/1rem); the
+   former inline "Model"/"Suite 8" text becomes the LABEL TO that row (stacked above,
+   unchanged small-caps pewter). Shared classes — one rule set covers both rows. */
 .spawn-model-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
   margin-top: 8px;
   position: relative; /* MD-9 · anchor for the absolutely-positioned in-DOM drawer */
 }
@@ -4237,10 +4209,31 @@ onBeforeUnmount(() => {
 /* MD-9 · THE DROPDOWN COMPONENT · the model picker now delegates its trigger/drawer/row chrome
    to ScsDropdown (offscreen-safe · unscoped-inline CSS travels with the component). The prior
    inline .spawn-model-trigger / .spawn-model-drawer / .spawn-model-row-btn styles are retired.
-   The dropdown fills the row's remaining width beside the label. */
+   The dropdown fills its OWN row (the enlarged selection row). */
 .spawn-model-dropdown {
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+}
+/* The 2/3 scale rides :deep onto the component's unscoped chrome — trigger + drawer rows
+   grow together so the open drawer matches its enlarged trigger; the drawer viewport
+   widens its cap so the larger rows still show several options. */
+.spawn-model-dropdown :deep(.scs-dropdown-trigger) {
+  font-size: 1.25rem;
+  padding: 0.67rem 1rem;
+  width: 100%;
+}
+.spawn-model-dropdown :deep(.scs-dropdown-row) {
+  padding: 0.67rem 1rem;
+}
+.spawn-model-dropdown :deep(.scs-dropdown-row-label) {
+  font-size: 1.2rem;
+}
+.spawn-model-dropdown :deep(.scs-dropdown-row-hint) {
+  font-size: 0.97rem;
+}
+.spawn-model-dropdown :deep(.scs-dropdown-drawer) {
+  max-height: 300px;
 }
 
 /* MD-9 · D-MC-3 · the recorded per-instance model tag on a session row (small · muted · pewter). */

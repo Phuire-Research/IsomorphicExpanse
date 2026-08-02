@@ -171,6 +171,18 @@ export type ScsBridgeClientState = {
   // Gitm Resolver's user-controlled update law). undefined/false = the ordinary worker auto-accept.
   // Cleared alongside the name (TFCD).
   pendingSpawnSuite8ManualMode: boolean | undefined;
+  // RS.2b · THE COMBINED INITIAL ENTRY · companion to pendingSpawnSuite8Name read at fire
+  // time. The per-run SCS:Vermillion directive threaded into the MCP args as
+  // initialDirective → the bridge persists it on the registry entry → cli-handler appends
+  // it to the Onboard seed as ONE initial positional prompt (no post-boot typed delivery).
+  // Cleared alongside the name (TFCD).
+  pendingSpawnSuite8InitialDirective: string | undefined;
+  // THE ONBOARD OPTION · companion read at fire time. undefined = default (Onboard rides per
+  // the anchor predicate); false = suppress (threaded as MCP onboard:false). Cleared (TFCD).
+  pendingSpawnSuite8Onboard: boolean | undefined;
+  // THE PLAIN-SPAWN LANE · companion read at fire time. undefined = default (anchor lane);
+  // false = plain instance (threaded as MCP anchor:false). Cleared (TFCD).
+  pendingSpawnSuite8Anchor: boolean | undefined;
   // MD-9 · D-MC-3 · Per-Instance Model Control · the selected model id (a full
   // AVAILABLE_MODELS id) read at spawn fire-time by BOTH the CMIA-Spawn and CMIA-Spawn-Suite8
   // principles and threaded into the MCP `arguments` (field-agnostic → payload.model → the
@@ -346,6 +358,22 @@ export type ScsBridgeSetPendingSpawnSuite8NamePayload = {
   // MCP manualMode arg) — approval gate INTACT + the Stand By overlay on the primed session.
   // The Gitm Resolver's flag. Omitted/false = the ordinary worker auto-accept.
   manualMode?: boolean;
+  // RS.2b · THE COMBINED INITIAL ENTRY · optional companion. A per-run SCS:Vermillion
+  // directive composed at spawn time (→ pendingSpawnSuite8InitialDirective → the
+  // InvokeSpawnSuite8 principle → MCP initialDirective arg) — the bridge appends it to the
+  // Onboard seed as ONE initial positional prompt, retiring the post-boot typed delivery
+  // (the C285 interleave class). When present, the bridge skips the standBy overlay arm.
+  initialDirective?: string;
+  // THE ONBOARD OPTION · optional companion. true by DEFAULT (omit = the Onboard seed rides
+  // per the anchor predicate — the current behavior; the Session Manager spawns this way).
+  // false = suppress the Onboard placement for THIS spawn (→ pendingSpawnSuite8Onboard →
+  // the InvokeSpawnSuite8 principle → MCP onboard:false) — for callers supplying their own seed.
+  onboard?: boolean;
+  // THE PLAIN-SPAWN LANE · optional companion. true by DEFAULT (omit = the anchor lane —
+  // the page/Shatterite Menu door). false = a PLAIN instance (→ pendingSpawnSuite8Anchor →
+  // MCP anchor:false): the bridge skips the whole anchor machinery. The Session Manager's
+  // default Suite 8 spawn is this lane (anchor:false + onboard:false).
+  anchor?: boolean;
 };
 
 // MD-9 · D-MC-3 · Per-Instance Model Control · the model-selection setter payload. Vue

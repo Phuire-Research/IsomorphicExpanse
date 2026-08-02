@@ -46,12 +46,19 @@ export const scsBridgeSetPendingSpawnSuite8Name = createQualityCardWithPayload<
     // principle can thread fresh:true into the MCP args for the Forge's Per-Actualization Engage.
     // D-UP · manualMode rides the same lane (TFCD clears all five together) — the Gitm Resolver's
     // user-controlled spawn (no auto-permission marker + the Stand By overlay).
+    // RS.2b · initialDirective rides the same lane (TFCD clears all six together) — the per-run
+    // anchor the bridge composes into the initial positional prompt (no post-boot delivery).
+    // THE ONBOARD OPTION · onboard rides the same lane (TFCD clears all seven together) —
+    // undefined = default (Onboard rides); false = suppress this spawn's seed.
     return {
       pendingSpawnSuite8Name: action.payload.suite8Name,
       pendingSpawnSuite8AsWorker: action.payload.asWorker,
       pendingSpawnSuite8ScpName: action.payload.scpName,
       pendingSpawnSuite8Fresh: action.payload.fresh,
       pendingSpawnSuite8ManualMode: action.payload.manualMode,
+      pendingSpawnSuite8InitialDirective: action.payload.initialDirective,
+      pendingSpawnSuite8Onboard: action.payload.onboard,
+      pendingSpawnSuite8Anchor: action.payload.anchor,
     };
   },
   methodCreator: defaultMethodCreator,

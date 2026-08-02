@@ -212,6 +212,16 @@ export const scsBridgeInvokeSessionSpawnPrinciple: ScsBridgeInvokeSessionSpawnPr
         // the bridge quality skips the auto-permission marker (approval gate intact) + arms the
         // Stand By overlay on the primed session (the Gitm Resolver's user-controlled update law).
         const pendingManualMode = k_.pendingSpawnSuite8ManualMode.select();
+        // RS.2b · THE COMBINED INITIAL ENTRY · read the per-run anchor at fire-time (same lane) ·
+        // threaded when set → the bridge persists it on the registry entry and cli-handler
+        // composes it into the initial positional prompt (no post-boot typed delivery).
+        const pendingInitialDirective = k_.pendingSpawnSuite8InitialDirective.select();
+        // THE ONBOARD OPTION · read at fire-time (same lane) · only an explicit false threads
+        // (→ MCP onboard:false → the bridge suppresses the Onboard seed for this spawn).
+        const pendingOnboard = k_.pendingSpawnSuite8Onboard.select();
+        // THE PLAIN-SPAWN LANE · read at fire-time (same lane) · only an explicit false threads
+        // (→ MCP anchor:false → the bridge skips the whole anchor machinery for this spawn).
+        const pendingAnchor = k_.pendingSpawnSuite8Anchor.select();
 
         console.log(
           '[SCS-Bridge CMIA-Spawn-Suite8] Gate · pendingSpawnSuite8Name=',
@@ -243,7 +253,7 @@ export const scsBridgeInvokeSessionSpawnPrinciple: ScsBridgeInvokeSessionSpawnPr
         // spawns AGAIN → infinite "new session after new session". Clearing here means the clear
         // is applied DURING the fetch (while isSpawningSuite8=true blocks re-fires), so by the
         // time .finally() releases the guard the trigger is already undefined.
-        dispatch(e_.scsBridgeSetPendingSpawnSuite8Name({ suite8Name: undefined, asWorker: undefined, scpName: undefined, fresh: undefined, manualMode: undefined }), {
+        dispatch(e_.scsBridgeSetPendingSpawnSuite8Name({ suite8Name: undefined, asWorker: undefined, scpName: undefined, fresh: undefined, manualMode: undefined, initialDirective: undefined, onboard: undefined, anchor: undefined }), {
           throttle: 0
         });
         console.log('[SCS-Bridge CMIA-Spawn-Suite8] Gate FIRE · pendingSuite8Name=', pendingSuite8Name, '· asWorker=', pendingAsWorker ?? false, '· trigger cleared early (TFCD-EARLY)');
@@ -281,6 +291,13 @@ export const scsBridgeInvokeSessionSpawnPrinciple: ScsBridgeInvokeSessionSpawnPr
               // D-UP · thread manualMode ONLY when true (the bridge quality severs the
               // auto-permission marker + arms the Stand By overlay). Omitted → worker auto-accept.
               ...(pendingManualMode ? { manualMode: true } : {}),
+              // RS.2b · thread the per-run anchor ONLY when set → the bridge composes it into
+              // the initial positional prompt (the standBy arm is skipped bridge-side).
+              ...(pendingInitialDirective ? { initialDirective: pendingInitialDirective } : {}),
+              // THE ONBOARD OPTION · thread ONLY the explicit false (omit = the Onboard rides).
+              ...(pendingOnboard === false ? { onboard: false } : {}),
+              // THE PLAIN-SPAWN LANE · thread ONLY the explicit false (omit = the anchor lane).
+              ...(pendingAnchor === false ? { anchor: false } : {}),
             },
           },
         };
