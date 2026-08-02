@@ -599,7 +599,6 @@ const islandRegistry: Record<string, () => Promise<Component>> = {
   // S10-HomePageAdapt). Registered here so getLandingPage() → islandId resolves once the
   // SAMLS swap flips suite8HomeNavigation.isMainLanding: true.
   suite8Home: () => import('../suite8/vue/Suite8HomeLanding.vue'),
-  frontierCircuitTest: () => import('../frontierCircuitTest/vue/FrontierCircuitTestHomeLanding.vue'),
   graphiteScribe: () => import('../graphiteScribe/vue/GraphiteScribeHomeLanding.vue'),
   isomorphicExpanse: () => import('../isomorphicExpanse/vue/IsomorphicExpanseHomeLanding.vue'),
   cadmium: () => import('../cadmium/vue/CadmiumLanding.vue'),
