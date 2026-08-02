@@ -1565,13 +1565,25 @@ export function createScsBridgeController(): ScsBridgeController {
       console.warn('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s · bridge endpoint not available');
       return;
     }
-    const url = `${bj.endpoint}/suite8/available`;
+    // THE SOVEREIGN ROSTER (the FrontierCircuitTest field catch): thread the OWN citizen as
+    // ?scpName= so the endpoint scans THIS SCP's Cascades/8_SUITES/ — the MD-1 D-SB-3 path,
+    // a cache-bypassing per-root DISK scan (a freshly minted Suite 8 appears immediately,
+    // turn-over included: boundScps[scp].dir tracks the live tree). Without the citizen the
+    // endpoint serves the WORKSPACE roster — the mint never listed. 404 (citizen not bound)
+    // → honest fall-back to the workspace roster below, never an empty picker.
+    const ownScpName = await resolveScpName();
+    const bareUrl = `${bj.endpoint}/suite8/available`;
+    const url = ownScpName ? `${bareUrl}?scpName=${encodeURIComponent(ownScpName)}` : bareUrl;
     try {
-      const res = await fetch(url, {
+      let res = await fetch(url, {
         method: 'GET',
         headers: { Accept: 'application/json' },
         keepalive: true,
       });
+      if (res.status === 404 && ownScpName) {
+        console.warn('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s · citizen unbound (404) · falling back to the workspace roster · scpName=', ownScpName);
+        res = await fetch(bareUrl, { method: 'GET', headers: { Accept: 'application/json' }, keepalive: true });
+      }
       if (!res.ok) {
         console.warn('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s · status=', res.status);
         return;
@@ -1579,7 +1591,7 @@ export function createScsBridgeController(): ScsBridgeController {
       const data = (await res.json()) as Suite8PickerEntry[];
       const roster = Array.isArray(data) ? data : [];
       availableSuite8s.value = roster;
-      console.log('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s · ok · count=', roster.length);
+      console.log('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s · ok · count=', roster.length, '· scope=', ownScpName ?? 'workspace');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[SCS-Bridge SSP-Vue] fetchAvailableSuite8s failed:', message);
