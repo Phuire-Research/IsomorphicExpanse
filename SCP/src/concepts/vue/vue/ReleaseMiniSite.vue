@@ -55,6 +55,21 @@ interface ReleaseCategory {
 // The single typed structure — built from the salvo files' content, VERBATIM.
 const RELEASE_SITE: ReleaseCategory[] = [
   {
+    id: 'v0943',
+    label: 'New in 0.943.0',
+    features: [
+      {
+        title: 'Updates that explain themselves',
+        color: 'green',
+        summary: 'The update diff now carries the exact preservation rules it was computed under — the resolver working inside your SCP reads the guard directly from the artifact.',
+        detail: [
+          'Every SCP update is a three-way merge guarded by preservation rules: your SCP’s identity — its name, its config — is never clobbered by a template default, and certain files are never deleted. Until now those rules lived only inside the bridge, where the resolver working <span class="hifi-hl-green">inside your SCP</span> had no way to read them. The diff is now self-describing: its provenance block pins the exact rules the merge was computed under.',
+          'The apply step prefers those pinned rules too — so the rules that <span class="hifi-hl-blue">computed</span> your update are the rules that <span class="hifi-hl-blue">land</span> it, even when the update itself is changing the bridge mid-flight. Smoother updates, with the guard in plain sight.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'v0942',
     label: 'New in 0.942.0',
     features: [
