@@ -55,6 +55,30 @@ interface ReleaseCategory {
 // The single typed structure — built from the salvo files' content, VERBATIM.
 const RELEASE_SITE: ReleaseCategory[] = [
   {
+    id: 'v0942',
+    label: 'New in 0.942.0',
+    features: [
+      {
+        title: 'Every SCP holds its own anchor',
+        color: 'green',
+        summary: 'Sessions, anchors, and bindings are now scoped to the SCP that owns them — two SCPs can each carry the same Suite, side by side, without ever crossing.',
+        detail: [
+          'Before, a Suite’s anchor was found by NAME alone — the first match across every SCP. A fresh SCP’s page could adopt ANOTHER SCP’s session: an old, empty terminal surfacing where a new anchor belonged, a resume of a conversation that never existed, a menu authored into the wrong SCP’s files. The whole identity chain is now <span class="hifi-hl-green">per-SCP</span>: every spawn carries its own SCP’s name, every anchor claim stays within its SCP, a re-engaged session keeps its Suite identity, and a session with nothing to resume boots fresh instead of dying.',
+          'The research workers ride the same ground: a dispatched Topic Researcher now boots <span class="hifi-hl-blue">bare</span> — its streamed plan IS its directive — while the page’s own anchor keeps its full onboarding, primed into motion.',
+        ],
+      },
+      {
+        title: 'Spawn plainly, anchor deliberately',
+        color: 'blue',
+        summary: 'The Session Manager spawns PLAIN instances — no onboarding, no anchor claim. Anchoring belongs to the Suite’s own page, and the Suite list reads live from your SCP’s folder.',
+        detail: [
+          'The Session Manager’s two lanes are now named: <span class="hifi-hl-blue">Spawn General Session</span> above, and the Suite 8 dropdown below — select a Suite to enable its spawn. A Session-Manager spawn is a plain instance: it never claims a page’s anchor and never takes the onboarding seed. The page’s own menu remains the one door that mints, anchors, and primes.',
+          'The Suite dropdown scans YOUR SCP’s own Suite folder fresh on every open — a Suite you just created appears immediately, turn-overs included. And a new chip on every Suite menu reads <span class="hifi-hl-green">Anchor: Specified</span> — your page addresses its own SCP’s anchor; the Local cross-SCP tabbing it teases is a coming refinement.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'v0941',
     label: 'New in 0.941.0',
     features: [
