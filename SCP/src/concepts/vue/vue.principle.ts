@@ -2639,6 +2639,23 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
   // `syncAvailable` (version differs remote-newer) drives the install button independently
   // of the class — the double bind (button hidden while red persists) is dissolved.
   type ScsCounterPair = { cli: number; scp: number };
+  // MD-UM · LEG 3 · THE DIFFERENTIAL RELAY — the release manifest shape the bridge writes into
+  // bridge.json (updateManifest.model.ts · getCachedReleaseManifest). Carried alongside the verdict
+  // so the Update Page's differential mount reads the incoming releases the SAME way it reads the
+  // applied counter — one fetch, one relay. Typed loosely (the bridge is the schema authority).
+  type ScsReleaseManifest = {
+    schemaVersion?: number;
+    current?: string;
+    muxameter?: ScsCounterPair;
+    releases?: Array<{
+      id: string;
+      version?: string;
+      label: string;
+      muxameter?: ScsCounterPair;
+      magnitude?: number;
+      features: Array<{ title: string; color: string; summary: string; detail: string[] }>;
+    }>;
+  };
   const scsBridgeVersionCheck: {
     installedVersion: string | null;
     npmLatestVersion: string | null;
@@ -2648,6 +2665,8 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     appliedScpMuxameter: number | null;
     syncAvailable: boolean;
     updateClass: 'none' | 'cli' | 'scp' | 'both' | 'unknown';
+    // MD-UM · LEG 3 · the incoming releases relay (null until the bridge's manifest fetch lands).
+    releaseManifest: ScsReleaseManifest | null;
   } = {
     installedVersion: null,
     npmLatestVersion: null,
@@ -2657,6 +2676,7 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     appliedScpMuxameter: null,
     syncAvailable: false,
     updateClass: 'none',
+    releaseManifest: null,
   };
   const parseCounterPair = (m: unknown): ScsCounterPair | null => {
     const o = m as { cli?: unknown; scp?: unknown } | null | undefined;
@@ -2667,15 +2687,27 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
   const readInstalledBridgeVersion = (): void => {
     try {
       const raw = fs.readFileSync(path.join(resolveScpLocalBridgeDir(), 'bridge.json'), 'utf-8');
-      const parsed = JSON.parse(raw) as { bridgeVersion?: unknown; installedMuxameter?: unknown };
+      const parsed = JSON.parse(raw) as {
+        bridgeVersion?: unknown;
+        installedMuxameter?: unknown;
+        releaseManifest?: unknown;
+      };
       scsBridgeVersionCheck.installedVersion =
         typeof parsed?.bridgeVersion === 'string' ? parsed.bridgeVersion : null;
       // The installed counters — written by a Muxameter-aware bridge; absent on older
       // bridges (⇒ 'unknown' verdicts when an update exists · both-paths, safe once).
       scsBridgeVersionCheck.installedMuxameter = parseCounterPair(parsed?.installedMuxameter);
+      // MD-UM · LEG 3 · THE DIFFERENTIAL RELAY — the incoming releases the bridge fetched (the
+      // composer leg writes getCachedReleaseManifest() into bridge.json). Absent on a pre-MD-UM
+      // bridge ⇒ null (the differential mount stands in with the SCP-local updates.json wings).
+      scsBridgeVersionCheck.releaseManifest =
+        parsed?.releaseManifest && typeof parsed.releaseManifest === 'object'
+          ? (parsed.releaseManifest as ScsReleaseManifest)
+          : null;
     } catch {
       scsBridgeVersionCheck.installedVersion = null;
       scsBridgeVersionCheck.installedMuxameter = null;
+      scsBridgeVersionCheck.releaseManifest = null;
     }
     // The applied counter — THIS SCP's own scp.config.json (the /scp-config resolution).
     // Absent (pre-law SCP) → null; the verdict falls back to installed-vs-remote for the

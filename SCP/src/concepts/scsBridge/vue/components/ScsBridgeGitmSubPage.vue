@@ -47,6 +47,10 @@ import { parseUnifiedDiff, type DiffFile, type DiffHunk } from '../../../gitm/gi
 import GitmConflictEditor from '../../../gitm/vue/GitmConflictEditor.vue';
 // GITM Dev Epoch (MD-E · part 3 · THE COMMAND PALETTE) — Cmd/Ctrl+K fuzzy-find over the action roster.
 import GitmCommandPalette from '../../../gitm/vue/GitmCommandPalette.vue';
+// MD-UM · LEG 4 · THE UPDATE PAGE MOUNT — the portable release holder in differential mode. Reads
+// this SCP's applied increment (appliedScpMuxameter) + the incoming releases (releaseManifest) off
+// the SAME /scs-bridge-version verdict the page already holds. Home Page mount stays 'current'.
+import ReleaseMiniSite from '../../../vue/vue/ReleaseMiniSite.vue';
 
 interface Props {
   gitmJson: GitmJsonShape | null;
@@ -67,6 +71,22 @@ interface Props {
     syncAvailable?: boolean;
     installedMuxameter?: { cli: number; scp: number } | null;
     remoteMuxameter?: { cli: number; scp: number } | null;
+    // MD-UM · LEG 4 · THE DIFFERENTIAL RELAY — the incoming releases the bridge fetched
+    // (LEG 3 · the /scs-bridge-version response carries it). null on a pre-MD-UM bridge ⇒ the
+    // differential mount stands in with the SCP-local updates.json wings.
+    releaseManifest?: {
+      schemaVersion?: number;
+      current?: string;
+      muxameter?: { cli: number; scp: number };
+      releases?: Array<{
+        id: string;
+        version?: string;
+        label: string;
+        muxameter?: { cli: number; scp: number };
+        magnitude?: number;
+        features: Array<{ title: string; color: string; summary: string; detail: string[] }>;
+      }>;
+    } | null;
   } | null;
 }
 
@@ -129,6 +149,22 @@ const cliUpdateBusy = computed<boolean>(() => cliUpdateState.value?.status === '
 function runCliUpdate(): void {
   if (cliUpdateBusy.value) return;
   fireAction('gitm_run_cli_update', {});
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// MD-UM · LEG 4 · THE UPDATE PAGE DIFFERENTIAL MOUNT
+// ──────────────────────────────────────────────────────────────────────────
+// The applied increment (THE SHARPENED LAW) — this SCP's own scp.config.json scsMuxameterScp,
+// served on the /scs-bridge-version verdict the page already holds. Null (pre-law SCP) ⇒ the
+// mount treats every counter-bearing wing as incoming (no false current-state).
+const appliedScp = computed<number | null>(() => props.versionCheck?.appliedScpMuxameter ?? null);
+// The incoming releases (LEG 3's relay). The mount also falls back to its OWN local updates.json
+// when this is absent — so the panel renders even on a pre-MD-UM bridge (the local wings stand in).
+const differentialReleases = computed(() => props.versionCheck?.releaseManifest?.releases ?? null);
+// The collapsible 'What this update carries' panel — collapsed by default (a fold above Run Update).
+const carriesOpen = ref<boolean>(false);
+function toggleCarries(): void {
+  carriesOpen.value = !carriesOpen.value;
 }
 
 function selectGitmTab(tab: GitmTab): void {
@@ -1152,6 +1188,34 @@ function spawnResolver(): void {
             app anor the CLI</span> — the sync above is optional, offered only to keep the
             versions aligned.
           </p>
+        </section>
+
+        <!-- ═ MD-UM · LEG 4 · WHAT THIS UPDATE CARRIES ═ — the collapsible differential panel ABOVE
+             the Run Update legend. Mounts the portable release holder in DIFFERENTIAL mode, fed the
+             applied increment (THE SHARPENED LAW · scp.config.json scsMuxameterScp) + the incoming
+             releases (LEG 3's relay). Collapsed by default (a fold, not the focus). Renders whenever
+             an scp-class update is due; the holder itself shows the honest 'you are current' empty
+             state when nothing is pending. Citation: DIAMOND-UPDATE-MANIFEST.md §4 (the differential). -->
+        <section
+          v-if="scpUpdateNeeded || differentialReleases"
+          class="gitm-carries hifi-pane-base"
+        >
+          <button
+            type="button"
+            class="gitm-carries-toggle hifi-mono"
+            :aria-expanded="carriesOpen"
+            @click="toggleCarries"
+          >
+            <span class="gitm-carries-caret">{{ carriesOpen ? '▾' : '▸' }}</span>
+            What this update carries
+          </button>
+          <div v-if="carriesOpen" class="gitm-carries-body">
+            <ReleaseMiniSite
+              mode="differential"
+              :applied-scp="appliedScp"
+              :releases="differentialReleases"
+            />
+          </div>
         </section>
 
         <!-- APPLY SUCCESS SCREEN — the update has landed (bridge C293 · stage idle + applied note).
@@ -3479,5 +3543,39 @@ function spawnResolver(): void {
      and its inner input fill it entirely — the whole area is the click target. */
   flex: 1;
   min-width: 220px;
+}
+
+/* MD-UM · LEG 4 · WHAT THIS UPDATE CARRIES — the collapsible differential panel above Run Update. */
+.gitm-carries {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.gitm-carries-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: rgba(235, 231, 222, 0.82);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+.gitm-carries-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.gitm-carries-caret {
+  font-size: 0.72rem;
+  color: rgba(235, 231, 222, 0.55);
+}
+.gitm-carries-body {
+  margin-top: 0.75rem;
+  /* The differential holder flows in the tab (no viewheight frame in this mode). */
+  max-height: 60vh;
+  overflow-y: auto;
 }
 </style>

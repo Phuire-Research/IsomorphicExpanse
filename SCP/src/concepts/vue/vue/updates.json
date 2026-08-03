@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "current": "0.943.0",
+  "muxameter": {
+    "cli": 9,
+    "scp": 11
+  },
+  "releases": [
+    {
+      "id": "v0943",
+      "version": "0.943.0",
+      "label": "New in 0.943.0",
+      "muxameter": {
+        "cli": 9,
+        "scp": 11
+      },
+      "magnitude": 2,
+      "features": [
+        {
+          "title": "The update flow, reinforced",
+          "color": "yellow",
+          "summary": "The staging update rides a hardened circuit — any number of your SCPs at once, every failure naming its position, one gesture to finalize on whichever branch you stand.",
+          "detail": [
+            "The whole circuit was reinforced in the field: concurrent updates share one source refresh instead of racing it, every SCP keeps its own update rail, and a failure lights the exact stage it stopped at with its reason — never a silent wall.",
+            "Two field-earned habits keep it smooth. Run an update with <span class=\"hifi-hl-yellow\">all your changes committed</span> — the update lands on your current branch, and a clean tree is the ground the circuit expects. And if the <span class=\"hifi-hl-green\">Turn Over prompt</span> does not appear after the resolver completes, that is a stochastic miss, not a failure: run the update again, anor tell the resolver session — <em>“Finalize the resolution — write the pending-0 resolution file and fire the Turn Over prompt.”</em> The apply lands the moment the resolution arrives."
+          ]
+        },
+        {
+          "title": "Updates that explain themselves",
+          "color": "green",
+          "summary": "The update diff now carries the exact preservation rules it was computed under — the resolver working inside your SCP reads the guard directly from the artifact.",
+          "detail": [
+            "Every SCP update is a three-way merge guarded by preservation rules: your SCP’s identity — its name, its config — is never clobbered by a template default, and certain files are never deleted. Until now those rules lived only inside the bridge, where the resolver working <span class=\"hifi-hl-green\">inside your SCP</span> had no way to read them. The diff is now self-describing: its provenance block pins the exact rules the merge was computed under.",
+            "The apply step prefers those pinned rules too — so the rules that <span class=\"hifi-hl-blue\">computed</span> your update are the rules that <span class=\"hifi-hl-blue\">land</span> it, even when the update itself is changing the bridge mid-flight. Smoother updates, with the guard in plain sight."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v0942",
+      "version": "0.942.0",
+      "label": "New in 0.942.0",
+      "muxameter": {
+        "cli": 8,
+        "scp": 10
+      },
+      "magnitude": 3,
+      "features": [
+        {
+          "title": "Every SCP holds its own anchor",
+          "color": "green",
+          "summary": "Sessions, anchors, and bindings are now scoped to the SCP that owns them — two SCPs can each carry the same Suite, side by side, without ever crossing.",
+          "detail": [
+            "Before, a Suite’s anchor was found by NAME alone — the first match across every SCP. A fresh SCP’s page could adopt ANOTHER SCP’s session: an old, empty terminal surfacing where a new anchor belonged, a resume of a conversation that never existed, a menu authored into the wrong SCP’s files. The whole identity chain is now <span class=\"hifi-hl-green\">per-SCP</span>: every spawn carries its own SCP’s name, every anchor claim stays within its SCP, a re-engaged session keeps its Suite identity, and a session with nothing to resume boots fresh instead of dying.",
+            "The research workers ride the same ground: a dispatched Topic Researcher now boots <span class=\"hifi-hl-blue\">bare</span> — its streamed plan IS its directive — while the page’s own anchor keeps its full onboarding, primed into motion."
+          ]
+        },
+        {
+          "title": "Spawn plainly, anchor deliberately",
+          "color": "blue",
+          "summary": "The Session Manager spawns PLAIN instances — no onboarding, no anchor claim. Anchoring belongs to the Suite’s own page, and the Suite list reads live from your SCP’s folder.",
+          "detail": [
+            "The Session Manager’s two lanes are now named: <span class=\"hifi-hl-blue\">Spawn General Session</span> above, and the Suite 8 dropdown below — select a Suite to enable its spawn. A Session-Manager spawn is a plain instance: it never claims a page’s anchor and never takes the onboarding seed. The page’s own menu remains the one door that mints, anchors, and primes.",
+            "The Suite dropdown scans YOUR SCP’s own Suite folder fresh on every open — a Suite you just created appears immediately, turn-overs included. And a new chip on every Suite menu reads <span class=\"hifi-hl-green\">Anchor: Specified</span> — your page addresses its own SCP’s anchor; the Local cross-SCP tabbing it teases is a coming refinement."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v0941",
+      "version": "0.941.0",
+      "label": "New in 0.941.0",
+      "muxameter": {
+        "cli": 7,
+        "scp": 9
+      },
+      "magnitude": 2,
+      "features": [
+        {
+          "title": "The Forge cycle, completed",
+          "color": "green",
+          "summary": "The Entourage Forge engages the moment a page is created — and the turn-over becomes the trigger at the END of its work, resolving the right branch on its own.",
+          "detail": [
+            "Before, a fresh page demanded a turn-over before the Forge could even begin — and on a brand-new app with a default git tree, that demand pointed at a working branch that did not exist yet. The order is now the cycle it always meant to be: <span class=\"hifi-hl-green\">engage at creation, work, then land</span>. The landing trigger surfaces once there is work on the tree, and the press resolves the branch itself — a fresh app takes its <span class=\"hifi-hl-blue\">first turn-over</span> with the same overlay and care as the app’s very first landing; a working branch simply restarts; an established app carries the work onto its working branch.",
+            "And git actions fired from any page now carry the app’s <span class=\"hifi-hl-green\">own name</span> to the bridge — a push from the Release pane lands on the right repository whether or not anything ever set focus that session."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v0940",
+      "version": "0.940.0",
+      "label": "New in 0.940.0",
+      "muxameter": {
+        "cli": 7,
+        "scp": 8
+      },
+      "magnitude": 2,
+      "features": [
+        {
+          "title": "Born from the freshest template",
+          "color": "green",
+          "summary": "Creating a new app now refreshes the template to the latest release before the birth — never a stale vintage — and a one-press Create door joins SCP Management.",
+          "detail": [
+            "A field catch: a new app could be born from whatever template vintage its workspace had frozen at, wearing a current version over old bones. Every template birth now <span class=\"hifi-hl-green\">refreshes to the freshest release first</span> — the same retained comparison machinery the update circuit already trusts — falling back gracefully when offline. The staged rail says so as it works: refreshing the template, then clone, install, ready.",
+            "And creation is now a page away: <span class=\"hifi-hl-green\">Create a New SCP</span> in SCP Management — one PascalCase name, one press, the same staged rail the manifest install walks. The TUI path is honest too: typing lands from the first key, and every character belongs to the name you are writing."
+          ]
+        },
+        {
+          "title": "The shader stands its ground",
+          "color": "purple",
+          "summary": "A render-mode choice now survives every internal rewrite — the chromatic shader no longer goes dark after a session of heavy motion.",
+          "detail": [
+            "The one writer that recorded your render-mode choice could be overwritten by routine internal refreshes — the choice silently erased, the shader falling dark. Every writer now <span class=\"hifi-hl-purple\">preserves the shader fields</span> it does not own. And closing the CLI now reliably carries the whole window set down with it — no orphaned windows holding the stage."
+          ]
+        }
+      ]
+    }
+  ]
+}

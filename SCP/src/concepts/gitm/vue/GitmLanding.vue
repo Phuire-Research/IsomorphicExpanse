@@ -35,6 +35,26 @@ const versionCheck = ref<{
   updateClass?: string;
   npmLatestVersion?: string | null;
   installedVersion?: string | null;
+  // D-RD1 · the Red Discipline fields (the /scs-bridge-version response carries them) —
+  // widened so they flow through to the SubPage's versionCheck prop.
+  appliedScpMuxameter?: number | null;
+  syncAvailable?: boolean;
+  installedMuxameter?: { cli: number; scp: number } | null;
+  remoteMuxameter?: { cli: number; scp: number } | null;
+  // MD-UM · LEG 4 · the differential relay — the incoming releases the bridge fetched.
+  releaseManifest?: {
+    schemaVersion?: number;
+    current?: string;
+    muxameter?: { cli: number; scp: number };
+    releases?: Array<{
+      id: string;
+      version?: string;
+      label: string;
+      muxameter?: { cli: number; scp: number };
+      magnitude?: number;
+      features: Array<{ title: string; color: string; summary: string; detail: string[] }>;
+    }>;
+  } | null;
 } | null>(null);
 // GITM SCP-UPD (C282) · the HEAVY diff body — MOCH-carried (the update watcher's C1 relay
 // fires at server boot before any client connects and BOCR is dead #640); the /gitm page
