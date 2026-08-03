@@ -1340,6 +1340,24 @@ function closeAnchorPanel(): void {
 const isDissipating = ref(false);
 const isArchiving = ref(false);
 
+// MD-ARC+C · Wave 7 · SessionManager Delete confirm discipline (Pewter RD §2.3).
+// The Delete (renamed Dissipate) verb now opens a compact Y/N confirm below the row
+// before firing handleDissipate. deleteConfirmFor = the session.id whose confirm is
+// open; simple Y/N (no typed-name — a session is a process record, not a directory
+// tree) · Cancel = default focus (the Pewter destructive default-N invariant).
+const deleteConfirmFor = ref<string>('');
+function openSessionDeleteConfirm(sessionId: string): void {
+  deleteConfirmFor.value = sessionId;
+}
+function cancelDeleteConfirm(): void {
+  deleteConfirmFor.value = '';
+}
+// Fire the delete from the confirm, then close the confirm (handleDissipate owns the guard).
+function confirmSessionDelete(sessionId: string): void {
+  cancelDeleteConfirm();
+  void handleDissipate(sessionId);
+}
+
 async function handleDissipate(sessionId: string): Promise<void> {
   if (isDissipating.value) return;
   isDissipating.value = true;
@@ -2733,16 +2751,33 @@ onBeforeUnmount(() => {
                   :disabled="isArchiving"
                   @click.stop="handleArchive(session.id)"
                 >{{ session.isAnchor ? 'Archive Anchor' : 'Archive' }}</button>
+                <!-- MD-ARC+C · Wave 7 · Delete (renamed Dissipate · Pewter RD §2.2) —
+                     opens a compact Y/N confirm below the row before firing (§2.3). -->
                 <button
                   v-if="!session.isAnchor"
                   type="button"
                   class="session-dissipate-btn"
-                  title="Dissipate — remove from the registry AND delete the real ClaudeCode session"
+                  title="Delete — remove from the registry and delete the ClaudeCode session (permanent)"
                   :disabled="isDissipating"
-                  @click.stop="handleDissipate(session.id)"
-                >Dissipate</button>
+                  @click.stop="openSessionDeleteConfirm(session.id)"
+                >Delete</button>
               </span>
 
+              </div>
+              <!-- MD-ARC+C · Wave 7 · SESSION DELETE CONFIRM (Pewter RD §2.3) · compact
+                   Y/N below session-row-top · Cancel = default focus (destructive default-N). -->
+              <div
+                v-if="deleteConfirmFor === session.id"
+                class="session-delete-confirm"
+                @click.stop
+              >
+                <span class="session-delete-confirm-warn">
+                  Delete is permanent — removes from registry + deletes session data.
+                </span>
+                <div class="session-delete-confirm-actions">
+                  <button class="session-confirm-cancel" type="button" autofocus @click.stop="cancelDeleteConfirm">Cancel</button>
+                  <button class="session-confirm-fire" type="button" :disabled="isDissipating" @click.stop="confirmSessionDelete(session.id)">Delete</button>
+                </div>
               </div>
               <!-- D3RM-G · PATC · Pewter Arrow Toggle Button — PVSR: PINNED at the right
                    edge over a fade; the scroll zone slides UNDER it, so every row stays
@@ -2941,14 +2976,33 @@ onBeforeUnmount(() => {
                 :disabled="isArchiving"
                 @click.stop="handleArchive(session.id)"
               >{{ session.isAnchor ? 'Archive Anchor' : 'Archive' }}</button>
+              <!-- MD-ARC+C · Wave 7 · Delete (renamed Dissipate · Pewter RD §2.2) —
+                   opens a compact Y/N confirm below the row before firing (§2.3). -->
               <button
                 v-if="!session.isAnchor"
                 type="button"
                 class="session-dissipate-btn"
-                title="Dissipate — remove from the registry AND delete the real ClaudeCode session"
+                title="Delete — remove from the registry and delete the ClaudeCode session (permanent)"
                 :disabled="isDissipating"
-                @click.stop="handleDissipate(session.id)"
-              >Dissipate</button>
+                @click.stop="openSessionDeleteConfirm(session.id)"
+              >Delete</button>
+            </div>
+
+            <!-- MD-ARC+C · Wave 7 · SESSION DELETE CONFIRM (Pewter RD §2.3) · compact Y/N ·
+                 Cancel = default focus (destructive default-N). Shared with the collapsed cluster
+                 via deleteConfirmFor (only one confirm can be open at a time · keyed by session.id). -->
+            <div
+              v-if="deleteConfirmFor === session.id"
+              class="session-delete-confirm"
+              @click.stop
+            >
+              <span class="session-delete-confirm-warn">
+                Delete is permanent — removes from registry + deletes session data.
+              </span>
+              <div class="session-delete-confirm-actions">
+                <button class="session-confirm-cancel" type="button" autofocus @click.stop="cancelDeleteConfirm">Cancel</button>
+                <button class="session-confirm-fire" type="button" :disabled="isDissipating" @click.stop="confirmSessionDelete(session.id)">Delete</button>
+              </div>
             </div>
 
             <!-- D3G Refinement Wave · Chat-Style HiFi Pewter Render of Last Exchange.
@@ -3861,6 +3915,59 @@ onBeforeUnmount(() => {
 .session-dissipate-btn:disabled {
   cursor: not-allowed;
   opacity: 0.3;
+}
+/* MD-ARC+C · Wave 7 · SESSION DELETE CONFIRM — compact inline expansion (Pewter RD §2.3). */
+.session-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  background: radial-gradient(ellipse at 20% 0%, rgba(190, 60, 70, 0.1) 0%, rgba(0, 0, 0, 0) 70%),
+              var(--color-board-elevated, #222228);
+  border-top: 1px solid color-mix(in srgb, var(--color-maroon, #be3c46) 45%, transparent);
+}
+.session-delete-confirm-warn {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+}
+.session-delete-confirm-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.session-confirm-cancel {
+  border: 1px solid var(--color-board-light, #16161a);
+  border-radius: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  padding: 0.22rem 0.7rem;
+  cursor: pointer;
+}
+.session-confirm-cancel:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.session-confirm-fire {
+  border: 1px solid var(--color-maroon, #be3c46);
+  border-radius: 0.3rem;
+  background: rgba(190, 60, 70, 0.22);
+  color: var(--color-red-light, #ff4e4e);
+  font-size: 0.65rem;
+  padding: 0.22rem 0.7rem;
+  cursor: pointer;
+}
+.session-confirm-fire:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(190, 60, 70, 0.4);
+}
+.session-confirm-fire:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 .session-row-top:hover {
   background: rgba(255, 255, 255, 0.02);

@@ -29,14 +29,20 @@ const installedVersion = computed<string>(() => props.bridgeJson?.bridgeVersion 
 const npmLatestVersion = computed<string | null>(() => props.bridgeJson?.npmLatestVersion ?? null);
 const updateAvailable = computed<boolean>(() => props.bridgeJson?.updateAvailable === true);
 
-type BoundScpEntry = { port: number; status: string; browserUrl: string };
+// MD-ARC+C · Wave 7 · the WAPF worktree role rides each boundScp entry (bridge-probed).
+type ScpWorktreeRole = 'clean' | 'instance' | 'owner';
+type BoundScpEntry = { port: number; status: string; browserUrl: string; worktree?: ScpWorktreeRole };
 type InstalledScpEntry = { anchoredAt?: string };
+// MD-ARC+C · Wave 7 · the Archived tab roster row (the sibling ledger relay).
+type ArchivedScpMetaEntry = { name: string; archivedAt: number; worktree: ScpWorktreeRole };
 type RosterShape = {
   bridgeUp: boolean;
   installedScps: string[];
   boundScps: Record<string, BoundScpEntry>;
   // The registry MAY surface per-SCP anchor metadata; read defensively (absent = no chip).
   installedMeta?: Record<string, InstalledScpEntry>;
+  // MD-ARC+C · Wave 7 · the Archived tab data (from SCPs.json archivedScps[] · same poll).
+  archivedScps?: ArchivedScpMetaEntry[];
   writtenAt: number;
 };
 
@@ -46,15 +52,45 @@ function onNoticeViewed(): void {
   noticeViewed.value = true;
 }
 
-const roster = ref<RosterShape>({ bridgeUp: false, installedScps: [], boundScps: {}, writtenAt: 0 });
+const roster = ref<RosterShape>({ bridgeUp: false, installedScps: [], boundScps: {}, archivedScps: [], writtenAt: 0 });
 const rosterLoaded = ref(false);
 
 // The row-action status surface (Boot/Focus feedback · the C842 Direct-Install prune kept it)
 const statusLine = ref('');
 const statusKind = ref<'idle' | 'ok' | 'error'>('idle');
 
-// Per-row in-flight guards (Boot/Focus)
+// Per-row in-flight guards (Boot/Focus/Archive/Restore/Delete)
 const rowBusy = ref<Record<string, boolean>>({});
+
+// ══ MD-ARC+C · Wave 7 · THE INSTALLED | ARCHIVED TAB SYSTEM (Pewter RD §1.2) ══
+// The tab bar lives inline in the roster head; the count chips migrate into each tab.
+const activeScpTab = ref<'installed' | 'archived'>('installed');
+
+// MD-ARC+C · Wave 7 · confirm-round state (Pewter RD §1.5).
+// deleteOpenFor = the row name whose Delete confirm expansion is open (either tab).
+// deleteTyped = the typed-name buffer (Installed tab · armed on exact match).
+// wapfOpenFor = the row name whose WAPF confer is open (worktree-owner Archive · §1.7).
+const deleteOpenFor = ref<string>('');
+const deleteTyped = ref<string>('');
+const wapfOpenFor = ref<string>('');
+const deleteArmed = computed(() => deleteTyped.value === deleteOpenFor.value && deleteOpenFor.value !== '');
+
+function openDeleteConfirm(name: string): void {
+  deleteOpenFor.value = name;
+  deleteTyped.value = '';
+  wapfOpenFor.value = '';
+}
+function cancelDelete(): void {
+  deleteOpenFor.value = '';
+  deleteTyped.value = '';
+}
+function openWapfConfer(name: string): void {
+  wapfOpenFor.value = name;
+  deleteOpenFor.value = '';
+}
+function cancelWapf(): void {
+  wapfOpenFor.value = '';
+}
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -150,7 +186,7 @@ async function refreshRoster(): Promise<void> {
     const res = await fetch('/bridge-roster');
     roster.value = (await res.json()) as RosterShape;
   } catch {
-    roster.value = { bridgeUp: false, installedScps: [], boundScps: {}, writtenAt: 0 };
+    roster.value = { bridgeUp: false, installedScps: [], boundScps: {}, archivedScps: [], writtenAt: 0 };
   }
   rosterLoaded.value = true;
 }
@@ -165,19 +201,40 @@ onBeforeUnmount(() => {
   stopCreatePolling();
 });
 
-const rosterRows = computed(() => {
+// MD-ARC+C · Wave 7 · the Installed-tab rows (the prior rosterRows · now carrying the
+// live flag for the live-guard + the WAPF worktree role for the ochre-hatch/refusal).
+const installedRows = computed(() => {
   const bound = roster.value.boundScps ?? {};
   const meta = roster.value.installedMeta ?? {};
   const names = new Set<string>([...(roster.value.installedScps ?? []), ...Object.keys(bound)]);
   return [...names].sort().map((name) => ({
     name,
     active: name in bound,
+    // The live-guard rail (Pewter RD §1.6): a bound SCP is running → Archive/Delete refused.
+    live: name in bound,
     browserUrl: bound[name]?.browserUrl ?? '',
     port: bound[name]?.port ?? null,
+    // WAPF role — 'instance' rows get the ochre-hatch + Archive-disabled; 'owner' rows fire
+    // the WAPF confer on Archive. Absent ⇒ 'clean' (a standard SCP).
+    worktree: (bound[name]?.worktree ?? 'clean') as ScpWorktreeRole,
     // Defensive: the registry may surface anchoredAt; absent field = no chip (graceful).
     anchoredAt: meta[name]?.anchoredAt,
   }));
 });
+
+// MD-ARC+C · Wave 7 · the Archived-tab rows (from SCPs.json archivedScps[] relay).
+const archivedRows = computed(() =>
+  [...(roster.value.archivedScps ?? [])]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entry) => ({
+      name: entry.name,
+      archivedAt: entry.archivedAt,
+      worktree: (entry.worktree ?? 'clean') as ScpWorktreeRole,
+    })),
+);
+
+// Retained alias — the count in the head / legacy readers. Installed is the primary roster.
+const rosterRows = installedRows;
 
 async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-focus'): Promise<void> {
   if (rowBusy.value[name]) return;
@@ -202,6 +259,64 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
     delete next[name];
     rowBusy.value = next;
   }
+}
+
+// ══ MD-ARC+C · Wave 7 · THE ARCHIVE / RESTORE / DELETE HANDLERS (Pewter RD §1.3-1.7) ══
+// All ride the SAME /bridge-* proxy pipe as Boot/Focus (the R3 law) with the SAME
+// rowBusy guard + statusLine feedback + refreshRoster-on-success (R1B finding 8).
+
+// A shared POST helper — mirrors handleRowAction's body/guard for the new verbs.
+async function fireRowRoute(
+  name: string,
+  route: string,
+  body: Record<string, unknown>,
+  verb: string,
+): Promise<void> {
+  if (rowBusy.value[name]) return;
+  rowBusy.value = { ...rowBusy.value, [name]: true };
+  try {
+    const res = await fetch(route, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const out = (await res.json()) as { ok: boolean; error?: string };
+    statusKind.value = out.ok ? 'ok' : 'error';
+    statusLine.value = out.ok ? `${verb} of ${name} accepted.` : out.error ?? `${verb} rejected.`;
+    void refreshRoster();
+  } catch (err) {
+    statusKind.value = 'error';
+    statusLine.value = `${verb} failed: ${String(err)}`;
+  } finally {
+    const next = { ...rowBusy.value };
+    delete next[name];
+    rowBusy.value = next;
+  }
+}
+
+// Archive an installed (stopped) SCP. Owner-of-worktrees rows route to the WAPF confer
+// instead (openWapfConfer surfaces Retire-first anor Force); a clean/normal row archives
+// directly. The live-guard (:disabled on the button) prevents a live-row press upstream.
+function handleArchive(name: string, worktree: ScpWorktreeRole): void {
+  if (worktree === 'owner') { openWapfConfer(name); return; }
+  void fireRowRoute(name, '/bridge-archive', { scpName: name }, 'Archive');
+}
+// WAPF Path B — force archive despite owned worktrees (move + git worktree repair · maroon voice).
+function fireWapfForce(name: string): void {
+  cancelWapf();
+  void fireRowRoute(name, '/bridge-archive', { scpName: name, force: true }, 'Force archive');
+}
+
+// Reinstate (Restore) an archived SCP back to its original seat at status 'pending'.
+function handleRestore(name: string): void {
+  void fireRowRoute(name, '/bridge-reinstate', { scpName: name }, 'Restore');
+}
+
+// Delete — PERMANENT. Fired from a confirm expansion (typed-name armed on the Installed
+// tab · immediate Y/N on the Archived tab). fromArchive selects the vault seat.
+function fireDelete(name: string, fromArchive: boolean): void {
+  cancelDelete();
+  void fireRowRoute(name, '/bridge-delete', { scpName: name, fromArchive }, 'Delete');
 }
 </script>
 
@@ -300,11 +415,31 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
     <!-- ZONE 4 · ASSEMBLE + SHARE THIS SCP'S OWN MANIFEST -->
     <ScpManifestAssemble />
 
-    <!-- THE ROSTER -->
+    <!-- THE ROSTER · MD-ARC+C · Wave 7 · Installed | Archived tab system (Pewter RD §1) -->
     <section class="scs-install-roster hifi-pane-base">
       <div class="scs-install-roster-head">
         <h2 class="scs-install-roster-title">Registered SCPs</h2>
-        <span class="scs-install-roster-count">{{ rosterRows.length }}</span>
+        <!-- Pewter RD §1.2 · the tab bar (StratiPUNK neon-amber · D7 active inversion) -->
+        <div class="scp-mgmt-tab-bar">
+          <button
+            class="sessions-btn scp-mgmt-tab"
+            :class="{ active: activeScpTab === 'installed' }"
+            type="button"
+            @click="activeScpTab = 'installed'"
+          >
+            <span class="sessions-btn-label">Installed</span>
+            <span class="sessions-badge">{{ installedRows.length }}</span>
+          </button>
+          <button
+            class="sessions-btn scp-mgmt-tab"
+            :class="{ active: activeScpTab === 'archived' }"
+            type="button"
+            @click="activeScpTab = 'archived'"
+          >
+            <span class="sessions-btn-label">Archived</span>
+            <span class="sessions-badge">{{ archivedRows.length }}</span>
+          </button>
+        </div>
         <button class="scs-install-refresh" type="button" @click="refreshRoster">Refresh</button>
       </div>
 
@@ -314,33 +449,167 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
         :class="{ 'scs-install-status-ok': statusKind === 'ok', 'scs-install-status-error': statusKind === 'error' }"
       >{{ statusLine }}</p>
 
-      <p v-if="rosterLoaded && rosterRows.length === 0" class="scs-install-empty">
-        No SCPs registered yet — install one above.
-      </p>
+      <!-- ══ INSTALLED TAB (Pewter RD §1.3) ══ -->
+      <template v-if="activeScpTab === 'installed'">
+        <p v-if="rosterLoaded && installedRows.length === 0" class="scs-install-empty">
+          No SCPs installed — install one above.
+        </p>
 
-      <div v-for="row in rosterRows" :key="row.name" class="scs-install-roster-row">
-        <span class="scs-install-roster-name">{{ row.name }}</span>
-        <span
-          class="scs-install-roster-chip"
-          :class="row.active ? 'scs-install-chip-active' : 'scs-install-chip-installed'"
-        >{{ row.active ? `ACTIVE · :${row.port}` : 'INSTALLED' }}</span>
-        <span v-if="row.anchoredAt" class="scs-install-roster-chip scs-install-chip-anchored">ANCHORED</span>
-        <span class="scs-install-roster-spacer"></span>
-        <button
-          v-if="!row.active"
-          class="scs-install-row-btn"
-          type="button"
-          :disabled="!!rowBusy[row.name] || !roster.bridgeUp"
-          @click="handleRowAction(row.name, '/bridge-boot')"
-        >{{ rowBusy[row.name] ? 'Booting…' : 'Boot' }}</button>
-        <button
-          v-if="row.active"
-          class="scs-install-row-btn scs-install-row-btn-focus"
-          type="button"
-          :disabled="!!rowBusy[row.name]"
-          @click="handleRowAction(row.name, '/bridge-focus')"
-        >{{ rowBusy[row.name] ? 'Focusing…' : 'Focus' }}</button>
-      </div>
+        <div
+          v-for="row in installedRows"
+          :key="row.name"
+          class="scs-install-roster-card"
+          :class="{ 'scs-install-roster-card-worktree': row.worktree === 'instance' }"
+        >
+          <div class="scs-install-roster-row">
+            <span class="scs-install-roster-name">{{ row.name }}</span>
+            <span
+              v-if="row.worktree === 'instance'"
+              class="scs-install-roster-chip scs-install-chip-worktree"
+            >{{ row.active ? `INSTANCE · :${row.port}` : 'INSTANCE · OFFLINE' }}</span>
+            <span
+              v-else
+              class="scs-install-roster-chip"
+              :class="row.active ? 'scs-install-chip-active' : 'scs-install-chip-installed'"
+            >{{ row.active ? `LIVE · :${row.port}` : 'OFFLINE' }}</span>
+            <span v-if="row.anchoredAt" class="scs-install-roster-chip scs-install-chip-anchored">ANCHORED</span>
+            <span class="scs-install-roster-spacer"></span>
+            <!-- Boot / Focus (the primary action · persists) -->
+            <button
+              v-if="!row.active"
+              class="scs-install-row-btn"
+              type="button"
+              :disabled="!!rowBusy[row.name] || !roster.bridgeUp"
+              @click="handleRowAction(row.name, '/bridge-boot')"
+            >{{ rowBusy[row.name] ? 'Booting…' : 'Spawn' }}</button>
+            <button
+              v-if="row.active"
+              class="scs-install-row-btn scs-install-row-btn-focus"
+              type="button"
+              :disabled="!!rowBusy[row.name]"
+              @click="handleRowAction(row.name, '/bridge-focus')"
+            >{{ rowBusy[row.name] ? 'Focusing…' : 'Focus' }}</button>
+            <!-- Archive (amber · reversible vault) · disabled-with-reason on live rows (§1.6);
+                 an instance is refused toward Delete (§1.7); an owner fires the WAPF confer -->
+            <button
+              class="scs-install-row-btn scs-install-row-btn-archive"
+              type="button"
+              :disabled="!!rowBusy[row.name] || row.live || row.worktree === 'instance' || !roster.bridgeUp"
+              :title="row.live
+                ? 'Stop the SCP first — archive requires the process to be offline'
+                : row.worktree === 'instance'
+                  ? 'A worktree instance — Delete retires it; the branch survives in its parent'
+                  : row.worktree === 'owner'
+                    ? 'Owns worktrees — Archive will confer git cleanup'
+                    : 'Archive this SCP (reversible · moves to the vault)'"
+              @click="handleArchive(row.name, row.worktree)"
+            >Archive</button>
+            <!-- Delete (red · PERMANENT) · opens the typed-name confirm expansion (§1.5) -->
+            <button
+              class="scs-install-row-btn scs-install-row-btn-delete"
+              type="button"
+              :disabled="!!rowBusy[row.name] || row.live || !roster.bridgeUp"
+              :title="row.live
+                ? 'Stop the SCP first — delete requires the process to be offline'
+                : 'Delete this SCP PERMANENTLY (removes the directory from disk)'"
+              @click="openDeleteConfirm(row.name)"
+            >{{ deleteOpenFor === row.name ? 'Delete ▲' : 'Delete' }}</button>
+          </div>
+
+          <!-- WAPF CONFER (§1.7) · worktree-owner Archive — Retire-first anor Force -->
+          <div v-if="wapfOpenFor === row.name" class="scs-install-panel scs-install-panel-wapf">
+            <span class="scs-install-panel-warn">
+              ⚑ WORKTREE INSTANCE — archiving requires git worktree cleanup. Choose:
+            </span>
+            <div class="scs-install-panel-actions">
+              <button
+                class="scs-install-panel-fire scs-install-panel-fire-wapf-force"
+                type="button"
+                :disabled="!!rowBusy[row.name]"
+                @click="fireWapfForce(row.name)"
+              >Force archive</button>
+              <button class="scs-install-panel-cancel" type="button" @click="cancelWapf">Cancel</button>
+            </div>
+          </div>
+
+          <!-- INSTALLED-TAB DELETE CONFIRM (§1.5 · typed-name armed) -->
+          <div v-if="deleteOpenFor === row.name" class="scs-install-panel scs-install-panel-delete">
+            <span class="scs-install-panel-warn">
+              ⚠ DELETE IS PERMANENT — <strong>removes the SCP directory from disk.</strong>
+              This cannot be undone. Type <strong>{{ row.name }}</strong> to confirm:
+            </span>
+            <div class="scs-install-panel-input">
+              <input
+                v-model="deleteTyped"
+                class="scs-create-input hifi-mono"
+                type="text"
+                :placeholder="row.name"
+                spellcheck="false"
+              />
+            </div>
+            <div class="scs-install-panel-actions">
+              <button class="scs-install-panel-cancel" type="button" @click="cancelDelete">Cancel</button>
+              <button
+                class="scs-install-panel-fire scs-install-panel-fire-delete"
+                :class="{ 'is-armed': deleteArmed }"
+                type="button"
+                :disabled="!deleteArmed || !!rowBusy[row.name]"
+                @click="fireDelete(row.name, false)"
+              >Delete</button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ══ ARCHIVED TAB (Pewter RD §1.4) ══ -->
+      <template v-else>
+        <p v-if="rosterLoaded && archivedRows.length === 0" class="scs-install-empty scs-install-empty-archived">
+          No archived SCPs yet — Archive an installed SCP to move it here.
+        </p>
+
+        <div
+          v-for="row in archivedRows"
+          :key="row.name"
+          class="scs-install-roster-card"
+        >
+          <div class="scs-install-roster-row">
+            <span class="scs-install-roster-name">{{ row.name }}</span>
+            <span class="scs-install-roster-chip scs-install-chip-archived">ARCHIVED</span>
+            <span class="scs-install-roster-spacer"></span>
+            <!-- Restore (green · revival) -->
+            <button
+              class="scs-install-row-btn scs-install-row-btn-restore"
+              type="button"
+              :disabled="!!rowBusy[row.name] || !roster.bridgeUp"
+              @click="handleRestore(row.name)"
+            >{{ rowBusy[row.name] ? 'Restoring…' : 'Restore' }}</button>
+            <!-- Delete (red · PERMANENT · simple Y/N — already vaulted) -->
+            <button
+              class="scs-install-row-btn scs-install-row-btn-delete"
+              type="button"
+              :disabled="!!rowBusy[row.name] || !roster.bridgeUp"
+              @click="openDeleteConfirm(row.name)"
+            >{{ deleteOpenFor === row.name ? 'Delete ▲' : 'Delete' }}</button>
+          </div>
+
+          <!-- ARCHIVED-TAB DELETE CONFIRM (§1.5 · simple Y/N · Cancel autofocus) -->
+          <div v-if="deleteOpenFor === row.name" class="scs-install-panel scs-install-panel-delete">
+            <span class="scs-install-panel-warn">
+              ⚠ DELETE IS PERMANENT — <strong>removes the archived SCP directory.</strong>
+              Already removed from active roster.
+            </span>
+            <div class="scs-install-panel-actions">
+              <button class="scs-install-panel-cancel" type="button" autofocus @click="cancelDelete">Cancel</button>
+              <button
+                class="scs-install-panel-fire scs-install-panel-fire-delete is-armed"
+                type="button"
+                :disabled="!!rowBusy[row.name]"
+                @click="fireDelete(row.name, true)"
+              >Delete permanently</button>
+            </div>
+          </div>
+        </div>
+      </template>
     </section>
   </div>
 </template>
@@ -597,5 +866,230 @@ async function handleRowAction(name: string, route: '/bridge-boot' | '/bridge-fo
 .scs-install-row-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MD-ARC+C · Wave 7 · SCP Archive/Delete UI (Pewter RD MD-ARC-PEWTER-UIFLOW.md)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Pewter RD §1.2 · THE TAB BAR — StratiPUNK neon-amber register · D7 active inversion.
+   Self-contained (does not rely on a global .sessions-btn) — mirrors its look. */
+.scp-mgmt-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0.5rem;
+}
+.scp-mgmt-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.04em;
+  color: rgba(255, 206, 9, 0.7);
+  background: rgba(12, 16, 26, 0.6);
+  border: 1px solid rgba(255, 191, 96, 0.3);
+  border-radius: 0.35rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.scp-mgmt-tab:hover {
+  color: rgba(255, 228, 170, 0.95);
+  border-color: rgba(255, 191, 96, 0.6);
+}
+/* Active tab: D7 inversion — full-saturation border + amplified glow (RD §1.2). */
+.scp-mgmt-tab.active {
+  color: rgb(255, 228, 170);
+  background: radial-gradient(ellipse at 87.5% 12.5%, rgba(255, 191, 96, 0.32) 0%, rgba(12, 16, 26, 0.8) 88%);
+  border: 1px solid rgb(255, 191, 96);
+  box-shadow: -2.5px 2.5px 0 rgba(255, 191, 96, 0.6), 0 0 16px rgba(255, 170, 60, 0.55);
+  text-shadow: 0 0 9px rgba(255, 180, 70, 0.9);
+}
+.scp-mgmt-tab .sessions-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.625rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+/* The row card wrapper — hosts the row + its confirm expansion. */
+.scs-install-roster-card {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.scs-install-roster-card .scs-install-roster-row {
+  border-bottom: none;
+}
+
+/* Pewter RD §1.7 · WORKTREE INSTANCE ROW — ochre diagonal-hatch tessera + yellow left-border. */
+.scs-install-roster-card-worktree {
+  position: relative;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(234, 179, 8, 0.06) 6px,
+    rgba(234, 179, 8, 0.06) 7px
+  );
+  background-color: var(--color-board-elevated, #222228);
+  border-left: 2px solid rgba(234, 179, 8, 0.45);
+}
+
+/* Pewter RD §1.3/1.4 · the new status chips. */
+.scs-install-chip-worktree {
+  border: 1px solid var(--color-yellow, #eab308);
+  color: var(--color-yellow-light, #ffce09);
+  letter-spacing: 0.04em;
+}
+.scs-install-chip-archived {
+  border: 1px solid var(--color-maroon, #b03a48);
+  color: var(--color-maroon, #b03a48);
+  letter-spacing: 0.06em;
+}
+
+/* Pewter RD §1.3 · Archive — amber voice (reversible · vault). */
+.scs-install-row-btn-archive {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.55);
+  color: rgba(255, 206, 9, 0.85);
+}
+.scs-install-row-btn-archive:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 0.2);
+  border-color: var(--color-yellow, #eab308);
+  color: var(--color-yellow-light, #ffce09);
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.35);
+}
+/* Pewter RD §1.6 · Archive disabled on LIVE/instance rows — muted amber. */
+.scs-install-row-btn-archive:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(234, 179, 8, 0.25);
+  color: rgba(255, 206, 9, 0.35);
+}
+
+/* Pewter RD §1.3 · Delete — red voice (destructive · permanent). */
+.scs-install-row-btn-delete {
+  background: rgba(190, 60, 70, 0.1);
+  border-color: rgba(190, 60, 70, 0.5);
+  color: rgba(220, 90, 100, 0.85);
+}
+.scs-install-row-btn-delete:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: var(--color-red, #ef4444);
+  color: var(--color-red-light, #ff4e4e);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Pewter RD §1.4 · Restore — green voice (revival). */
+.scs-install-row-btn-restore {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.55);
+  color: rgba(39, 227, 108, 0.85);
+}
+.scs-install-row-btn-restore:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: var(--color-green, #22c55e);
+  color: var(--color-green-light, #27e36c);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
+}
+
+/* Pewter RD §1.5/1.7 · THE CONFIRM / WAPF EXPANSION PANEL (inline row-expansion · not a modal). */
+.scs-install-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  margin: 0 0 0.4rem;
+  background: radial-gradient(ellipse at 20% 0%, rgba(190, 60, 70, 0.1) 0%, rgba(0, 0, 0, 0) 70%),
+              var(--color-board-elevated, #222228);
+  border: 1px solid color-mix(in srgb, var(--color-maroon, #be3c46) 45%, transparent);
+  border-radius: 0.4rem;
+}
+/* WAPF confer variant — yellow accent (RD §1.7). */
+.scs-install-panel-wapf {
+  border-color: color-mix(in srgb, var(--color-yellow, #eab308) 55%, var(--color-board-light, #16161a));
+  background: radial-gradient(ellipse at 20% 0%, rgba(234, 179, 8, 0.08) 0%, rgba(0, 0, 0, 0) 70%),
+              var(--color-board-elevated, #222228);
+}
+.scs-install-panel-wapf .scs-install-panel-warn {
+  color: var(--color-yellow-light, #ffce09);
+}
+.scs-install-panel-warn {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.7);
+}
+.scs-install-panel-warn strong {
+  color: #ffffff;
+}
+.scs-install-panel-input {
+  display: flex;
+}
+.scs-install-panel-input .scs-create-input {
+  flex: 1 1 auto;
+}
+.scs-install-panel-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.scs-install-panel-cancel {
+  border: 1px solid var(--color-board-light, #16161a);
+  border-radius: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  padding: 0.28rem 0.85rem;
+  cursor: pointer;
+}
+.scs-install-panel-cancel:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+/* The FIRE button — muted at rest (RD destructive default-N); .is-armed lights it. */
+.scs-install-panel-fire {
+  border-radius: 0.3rem;
+  font-size: 0.7rem;
+  padding: 0.28rem 0.85rem;
+  cursor: pointer;
+}
+.scs-install-panel-fire-delete {
+  border: 1px solid var(--color-maroon, #be3c46);
+  background: rgba(190, 60, 70, 0.15);
+  color: rgba(220, 90, 100, 0.6);
+  opacity: 0.7;
+}
+.scs-install-panel-fire-delete.is-armed {
+  color: var(--color-red-light, #ff4e4e);
+  background: rgba(190, 60, 70, 0.28);
+  opacity: 1;
+}
+.scs-install-panel-fire-delete.is-armed:hover {
+  box-shadow: 0 0 8px rgba(190, 60, 70, 0.45);
+}
+.scs-install-panel-fire-delete:disabled {
+  cursor: not-allowed;
+}
+/* WAPF force path — maroon voice (RD §1.7). */
+.scs-install-panel-fire-wapf-force {
+  border: 1px solid color-mix(in srgb, var(--color-maroon, #be3c46) 55%, var(--color-board-light, #16161a));
+  background: rgba(190, 60, 70, 0.12);
+  color: var(--color-red-light, #ff4e4e);
+}
+.scs-install-panel-fire-wapf-force:hover:not(:disabled) {
+  box-shadow: 0 0 8px rgba(190, 60, 70, 0.4);
+}
+
+/* Pewter RD §1.8 · the archived-tab empty state (italic · centered). */
+.scs-install-empty-archived {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 1.25rem;
 }
 </style>

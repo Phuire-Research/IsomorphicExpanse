@@ -1497,9 +1497,7 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
   // (resolveScpLocalBridgeDir · the per-SCP rail MD-A established — the bridge keeps
   // it current on every workspace write). The bridge's /mcp accepts single-shot
   // JSON-RPC tools/call POSTs (the mcpInvoke precedent — no session handshake).
-  // MD-ARC+C · Wave 7 · the boundScps entry gains an optional `worktree` marker (the WAPF role the
-  // bridge probes at write time) and the shape gains the `archivedScps` sibling ledger relay.
-  const readOwnBridgeJson = (): { endpoint?: string; port?: number; installedScps?: string[]; boundScps?: Record<string, { port: number; status: string; browserUrl: string; worktree?: 'clean' | 'instance' | 'owner' }>; scpLifecycle?: Record<string, string>; scpWindows?: Record<string, number>; scpWindowsRendered?: Record<string, number>; scpStatuses?: Record<string, string>; archivedScps?: Array<{ name: string; archivedAt: number; worktree: 'clean' | 'instance' | 'owner' }>; writtenAt?: number } | null => {
+  const readOwnBridgeJson = (): { endpoint?: string; port?: number; installedScps?: string[]; boundScps?: Record<string, { port: number; status: string; browserUrl: string }>; scpLifecycle?: Record<string, string>; scpWindows?: Record<string, number>; scpWindowsRendered?: Record<string, number>; scpStatuses?: Record<string, string>; writtenAt?: number } | null => {
     try {
       const raw = fs.readFileSync(path.join(resolveScpLocalBridgeDir(), 'bridge.json'), 'utf-8');
       return JSON.parse(raw);
@@ -1539,9 +1537,7 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       // scpWindows carried alongside (same consistent-shape reason · empty ⇒ no window presence).
       // M2 · WINDOW-RENDERED · scpWindowsRendered carried alongside (same consistent-shape reason).
       // C653 · scpStatuses carried alongside (same consistent-shape reason · empty ⇒ no install-transient).
-      // MD-ARC+C · Wave 7 · archivedScps carried alongside (same consistent-shape reason · [] ⇒ the
-      // widget's Archived tab shows the empty state whether the bridge is up or not).
-      res.json({ bridgeUp: false, installedScps: [], boundScps: {}, scpLifecycle: {}, scpWindows: {}, scpWindowsRendered: {}, scpStatuses: {}, archivedScps: [], writtenAt: 0 });
+      res.json({ bridgeUp: false, installedScps: [], boundScps: {}, scpLifecycle: {}, scpWindows: {}, scpWindowsRendered: {}, scpStatuses: {}, writtenAt: 0 });
       return;
     }
     res.json({
@@ -1568,12 +1564,6 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       // INSTALL tick + disable the instance-row Spawn button while a fresh instance's npm install
       // runs. Absent on a pre-C653 bridge.json ⇒ {} (the helm treats every instance as install-complete).
       scpStatuses: meta.scpStatuses ?? {},
-      // MD-ARC+C · Wave 7 · THE ARCHIVED ROSTER — echo the bridge's {name, archivedAt, worktree}
-      // projection of SCPs.json archivedScps[] so the widget's Archived tab renders Restore + Delete
-      // rows off the SAME poll (no second fetch). The `worktree` markers on installedScps/boundScps
-      // ride through inside `boundScps` above (each BoundScpEntry carries its WAPF role). Absent on a
-      // pre-Wave-7 bridge.json ⇒ [] (the widget shows the empty-archived state).
-      archivedScps: meta.archivedScps ?? [],
       writtenAt: meta.writtenAt ?? 0,
     });
   });
@@ -1810,50 +1800,6 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       return;
     }
     void invokeBridgeTool('scp_stop', { scpName }).then((out) => res.json(out));
-  });
-
-  // MD-ARC+C · Wave 7 · SARC — archive a STOPPED SCP (the reversible vault move ·
-  // recoverable via /bridge-reinstate). Mirrors /bridge-stop's shape exactly (scpName
-  // guard → invokeBridgeTool). `force` rides the H1-owner Path B (move + git worktree
-  // repair); the widget re-calls with force:true when the WAPF confer surfaces owned
-  // worktrees. The roster poll moves the row to the Archived tab on the next cycle.
-  expressApp.post('/bridge-archive', express.json(), (req, res) => {
-    const { scpName, force } = (req.body ?? {}) as { scpName?: string; force?: boolean };
-    if (!scpName) {
-      res.status(400).json({ ok: false, error: 'scpName required' });
-      return;
-    }
-    const args: Record<string, unknown> = { scpName };
-    if (force === true) args.force = true;
-    void invokeBridgeTool('scp_archive', args).then((out) => res.json(out));
-  });
-
-  // MD-ARC+C · Wave 7 · SRST — reinstate an archived SCP (the reverse move + ledger
-  // restoration at status 'pending' · launch is manual). Mirrors /bridge-stop's shape.
-  // The roster poll moves the row back to the Installed tab on the next cycle.
-  expressApp.post('/bridge-reinstate', express.json(), (req, res) => {
-    const { scpName } = (req.body ?? {}) as { scpName?: string };
-    if (!scpName) {
-      res.status(400).json({ ok: false, error: 'scpName required' });
-      return;
-    }
-    void invokeBridgeTool('scp_reinstate', { scpName }).then((out) => res.json(out));
-  });
-
-  // MD-ARC+C · Wave 7 · SDEL — PERMANENTLY delete an SCP (the destructive sibling of
-  // /bridge-archive · NOT recoverable). `fromArchive` selects the vault seat (deleting
-  // an already-archived SCP) vs the installed seat. Mirrors /bridge-stop's shape. The
-  // roster poll drops the row on the next cycle. The widget arms this behind the typed-
-  // name confirm (Installed tab) anor the Y/N confirm (Archived tab).
-  expressApp.post('/bridge-delete', express.json(), (req, res) => {
-    const { scpName, fromArchive } = (req.body ?? {}) as { scpName?: string; fromArchive?: boolean };
-    if (!scpName) {
-      res.status(400).json({ ok: false, error: 'scpName required' });
-      return;
-    }
-    const args: Record<string, unknown> = { scpName };
-    if (fromArchive === true) args.fromArchive = true;
-    void invokeBridgeTool('scp_delete', args).then((out) => res.json(out));
   });
 
   // Focus a live SCP's window. The URL is passed EXPLICITLY from the roster's boundScps
