@@ -75,11 +75,13 @@ PART-RENEWAL ORIENTATION: Identity-bearing fields — package.json name/descript
 
 UI-PROGRESS (best-effort — attempt before each Step below): Stamp progress to the UI via the
   bridge tool gitm_update_progress at the /mcp endpoint (read the endpoint from
-  Cascades/Bridge/bridge.json) with { stage: 'resolving', note: '<what you are doing now>' }.
+  Cascades/Bridge/bridge.json) with { "originScpName": "<scpName>", "stage": "resolving",
+  "note": "<what you are doing now>" }.
   /MCP CALL DISCIPLINE (every bridge tool call): curl -s -m 15 -H 'Content-Type: application/json'
     — the response is ONE JSON body; read it, then proceed. NEVER background these calls and never
-    omit the -m timeout. Fire strictly sequentially. Never pass scpName to any gitm tool — the
-    bridge resolves the active SCP from its own update state.
+    omit the -m timeout. Fire strictly sequentially. SOVEREIGN CALLS: EVERY gitm tool call MUST
+    carry "originScpName": "<scpName>" (your §4 stamp) — the update rail is PER-SCP; your stamps
+    land on YOUR SCP's rail and never cross another update running beside yours.
   FAILURE RULE: a failed or timed-out progress stamp NEVER blocks the work — proceed immediately.
     The stamp is informational only; the resolution file is the deliverable.
 
@@ -167,7 +169,14 @@ CONCLUDING SEQUENCE: The resolution file (pending 0) + the contract line below I
   bridge's terminal applied stamp and strand the rail. After writing the file:
   (1) Do NOT fire any further gitm_update_progress stamp. The last stamp you may fire is a
       per-step 'resolving' note BEFORE the write — never after. The write IS the hand-off.
-  (2) On ANY hang or timeout during the earlier steps: STOP calling. Report the contract line
+  (2) THE TURN-OVER PROMPT (MANDATORY · the ONE permitted post-write call): once the write
+      lands, call the bridge tool scp_alert_turn_over with
+      { "scpName": "<scpName>", "purpose": "SCS update applied — Turn Over boots the updated code" }.
+      This is an ALERT, never a progress stamp — it writes the turnOverAlert banner + focuses
+      the SCP window; it does NOT touch the stage rail (rule 1 stands). The USER performs the
+      Turn Over; you STAND BY. A failed anor timed-out alert follows the FAILURE RULE (never
+      blocks — the Apply Success panel still carries the control; report it in the contract line).
+  (3) On ANY hang or timeout during the earlier steps: STOP calling. Report the contract line
       with the HALT note appended:
       SCS:Vermillion:OK:<summary> · invocation-channel HALT: <which call hung>
   The user watches the bridge carry the boot-proof through.

@@ -105,10 +105,17 @@ const isDirtyTree = computed<boolean>(() => gitmController?.gitmJson.value?.dirt
 // available — the natural loop is edit-on-B → turn over B (restart+test) → repeat. Dirty → the
 // row-4 pre-commit carries the work; clean → the row-5 anchor is a pure restart-on-B. Previously
 // abMode 'success' + a clean tree left NO way to re-turn-over on B.
-const onWorkingB = computed<boolean>(() => {
+// MD-ATC · THE SELECTED-B PREDICATE (checkout-sovereign · the hop break): the CURRENT
+// branch is a working B when it lives in the b/ namespace ANOR it IS the registered
+// workingBranch — a hopped-to, never-registered B counts. Enablement follows the
+// CHECKOUT; the registration is bookkeeping, never a gate.
+const selectedB = computed<boolean>(() => {
+  const cur = currentBranch.value.trim();
+  if (cur === '') return false;
   const wb = gitmController?.gitmJson.value?.workingBranch ?? '';
-  return wb.length > 0 && currentBranch.value === wb;
+  return cur.startsWith('b/') || (wb.length > 0 && cur === wb);
 });
+const onWorkingB = computed<boolean>(() => selectedB.value);
 const baseEnabled = computed<boolean>(
   () => changesPrimedOnB.value > 0 || isCandidate.value || onWorkingB.value,
 );
@@ -135,7 +142,10 @@ const isEnabled = computed<boolean>(() => {
   // (the natural edit-on-B → turn-over loop · the bridge guards remain authoritative). This keeps the
   // finalize gesture live after an auto-apply lands changes on B, even when the strict abMode gate
   // hasn't flipped (the STAMP RACE left the rail mid-state · isDirtyTree is the honest signal).
-  return wb.length > 0 && (baseEnabled.value || cleanHopReady.value || isDirtyTree.value);
+  // MD-ATC · the hard gate RELAXES to the Selected-B predicate: a hopped-to B (never
+  // registered · wb still '') ENABLES; the registered-B path (incl. the prismatic hop
+  // from A) is preserved.
+  return (selectedB.value || wb.length > 0) && (baseEnabled.value || cleanHopReady.value || isDirtyTree.value);
 });
 
 // GUARD-SURFACE (the honest-feedback net for "C") — the bridge target-branch-empty GUARDSHUNT
@@ -143,7 +153,8 @@ const isEnabled = computed<boolean>(() => {
 // if a firing reaches here, surface a teaching hint instead of a silent no-op. Composes the
 // SAME workingBranch predicate from the propagated gitm.json (NO new state field · TQNI-safe).
 const workingBranch = computed<string>(() => gitmController?.gitmJson.value?.workingBranch ?? '');
-const isUninducted = computed<boolean>(() => workingBranch.value.length === 0);
+// MD-ATC · a Selected B (hopped-to · unregistered) is inducted-IN-FACT — the checkout IS the B.
+const isUninducted = computed<boolean>(() => workingBranch.value.length === 0 && !selectedB.value);
 // SORD Shield/Sword — the stable A name for the failsafe carrier. (The row-4 commit-then-anchor vs
 // row-5 anchor-only split keys off changesPrimedOnB — the B working-tree drift signal.)
 const stableBranch = computed<string>(() => gitmController?.gitmJson.value?.stableBranch ?? '');

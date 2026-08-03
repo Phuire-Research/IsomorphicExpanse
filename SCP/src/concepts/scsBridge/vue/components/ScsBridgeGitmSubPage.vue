@@ -623,14 +623,27 @@ const stageRail = computed<{ key: UpdateStage; label: string; state: StageChipSt
   const status = props.gitmJson?.updateStatus;
   const live = status?.stage ?? 'idle';
   const isError = live === 'error';
+  // MD-UFS · THE POSITION DERIVATION (no new schema — the rail already tells where):
+  // cloneMode never stamped → the CLONE leg died · no diff present → COMPARE ·
+  // an apply-prefixed stageError → APPLY · else the failure sat at/after REVIEW.
+  // The pills BEFORE the failed position read done; the failed one alone reads error.
+  const failedOrdinal = !isError
+    ? -1
+    : (status?.cloneMode ?? '') === ''
+      ? 0
+      : status?.diffPresent !== true
+        ? 1
+        : (status?.stageError ?? '').startsWith('apply')
+          ? 4
+          : 2;
   // On 'idle' the rail is not shown (the empty-state CTA renders instead). The current ordinal
   // is the live stage's index; 'idle'/'error' both resolve to -1 (no active chip on the rail).
   const currentOrdinal = UPDATE_STAGES.indexOf(live as UpdateStage);
   return UPDATE_STAGES.map((key, ordinal) => {
     let state: StageChipState;
     if (isError) {
-      // The engine halted — the rail reads error across the board (the message surfaces below).
-      state = 'error';
+      // The engine halted — the FAILED position reads error; the reached legs read done.
+      state = ordinal < failedOrdinal ? 'done' : ordinal === failedOrdinal ? 'error' : 'pending';
     } else if (ordinal < currentOrdinal) {
       state = 'done';
     } else if (ordinal === currentOrdinal) {
@@ -643,10 +656,15 @@ const stageRail = computed<{ key: UpdateStage; label: string; state: StageChipSt
 });
 
 // The live stage error message (empty when no error).
+// MD-UFS · THE NON-EMPTY GUARANTEE (view-side): the rail can carry the failure voice in
+// stageError ANOR note (the failure-node/expiry class leaves stageError '') — surface
+// WHATEVER it carries; an error stage must NEVER render as silent all-red.
 const stageErrorMessage = computed<string>(() => {
   const status = props.gitmJson?.updateStatus;
   if (!status || status.stage !== 'error') return '';
-  return status.stageError;
+  if (status.stageError !== '') return status.stageError;
+  if ((status.note ?? '') !== '') return status.note;
+  return 'the update engine halted without a message — Run Update again (a first run may have been refreshing the source)';
 });
 
 // Whether the engine is mid-flight (any non-terminal active stage). Gates the Run Update button.
@@ -695,10 +713,15 @@ const hasWorkingB = computed<boolean>(() => {
   return wb !== '' || isWorkingBranchPer(cur, g);
 });
 
-// F4 · fire the hard turn-over (the finalize gesture when no working B exists). The bridge-side
-// guards remain the authoritative safety rail; this is the UI trigger for the reboot-proof.
-function finalizeHardTurnOver(): void {
-  controller.value?.triggerHardTurnOver();
+// MD-ATC-F · THE TRACKED A FINALIZE (the disjointed-extra-step cure): the prior hard leg
+// restarted WITHOUT the turn-over protocol — no turnOver stamp (the alert overlay
+// re-appeared on resume) and no boot-proof reset (the panel never yielded). The finalize
+// now rides the SAME tracked pipe as every turn-over (gitm_turn_over_with_source ·
+// source 'A' — the clean post-apply tree passes the bridge guard plainly): the stamp
+// retires the alert, the reboot proves the update, and the boot-report reset yields
+// this panel so the Update workflow can run again. Bridge guards stay authoritative.
+function finalizeTurnOverA(): void {
+  fireAction('gitm_turn_over_with_source', { source: 'A' });
 }
 
 // The summary conference count (true overlaps surfaced from the diff · 0 when no diff).
@@ -1156,12 +1179,15 @@ function spawnResolver(): void {
               <GitmTurnOverBButton />
             </template>
             <template v-else>
+              <!-- MD-ATC-F · the TRACKED Turn Over A (the A-family green · honest label) —
+                   rides the same protocol as B: stamp → reboot-proof → the panel yields. -->
               <button
-                class="hifi-btn hifi-btn-blue gitm-apply-success-hard-turnover"
+                class="gitm-apply-success-hard-turnover"
                 :disabled="isGitmActing"
-                @click="finalizeHardTurnOver"
+                @click="finalizeTurnOverA"
               >
-                Turn Over &amp; Restart to Prove the Update
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                Turn Over A &amp; Restart to Prove the Update
               </button>
               <p class="gitm-apply-success-hard-note">
                 Restarting the app on the updated code is the proof — if it boots, the update holds.
@@ -1221,6 +1247,9 @@ function spawnResolver(): void {
         </div>
         <p v-if="stageErrorMessage !== ''" class="gitm-update-stage-error">
           {{ stageErrorMessage }}
+        </p>
+        <p v-if="stageErrorMessage !== ''" class="gitm-update-explainer">
+          Run Update again — the comparison restarts from the top; the red pill marks where this run stopped.
         </p>
 
         <!-- PRE-UPDATE STATE — no diff yet + engine idle → a single CTA + one-line explainer. -->
@@ -2719,6 +2748,59 @@ function spawnResolver(): void {
   text-transform: uppercase;
   color: var(--color-viridian, #4ade80);
   text-align: center;
+}
+
+/* MD-ATC-F2 · PEWTER TESSERA · THE TACTICAL A REGISTER (the blend-in cure): the finalize
+   takes the Tactical Bridge StratiPUNK voice — the GitmTurnOverAButton construction at
+   label width: a deep near-black chamfered body whose viridian identity reads through the
+   thin glowing edge (the color informs via the glow, NEVER a flooded fill that sinks into
+   the green pane). Mirrors the 44px dock register's field/edge/chamfer/glow verbatim. */
+.gitm-apply-success-hard-turnover {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.6rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  background:
+    radial-gradient(ellipse at 38% 30%, rgba(19, 213, 148, 0.15) 0%, rgba(8, 14, 12, 0) 62%),
+    radial-gradient(ellipse at 50% 120%, rgba(19, 213, 148, 0.09) 0%, rgba(7, 12, 10, 0) 70%),
+    rgb(9, 14, 12);
+  border: 1px solid rgba(19, 213, 148, 0.55);
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0 calc(100% - 8px), 0 8px
+  );
+  box-shadow:
+    0 0 8px 0 rgba(19, 213, 148, 0.28),
+    inset 0 0 10px 0 rgba(19, 213, 148, 0.10);
+  color: rgb(19, 213, 148);
+  text-shadow: 0 0 6px rgba(19, 213, 148, 0.6);
+}
+
+.gitm-apply-success-hard-turnover:hover:not(:disabled) {
+  border-color: rgba(19, 213, 148, 0.9);
+  color: rgb(110, 245, 200);
+  box-shadow:
+    0 0 14px 1px rgba(19, 213, 148, 0.5),
+    inset 0 0 14px 0 rgba(19, 213, 148, 0.18);
+}
+
+.gitm-apply-success-hard-turnover:active:not(:disabled) {
+  box-shadow: inset 0 0 12px 1px rgba(19, 213, 148, 0.35);
+}
+
+.gitm-apply-success-hard-turnover:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* STAGE RAIL — the ordinal chips + arrow separators. */

@@ -130,10 +130,10 @@ onUnmounted(() => {
         <p class="hero-welcome hifi-heading">Welcome to the Unlimited Frontier.</p>
       </div>
       <div class="hero-status">
-        <span class="status-label hifi-mono">BRIDGE</span>
+        <span class="status-label hifi-mono">CLI BRIDGE</span>
         <span :class="['status-value', isConnected ? 'ready' : 'loading']">{{ connectionStatus }}</span>
         <span class="status-sep">·</span>
-        <span class="status-label hifi-mono">RELEASE</span>
+        <span class="status-label hifi-mono">VERSION</span>
         <span class="status-value ready">v{{ RELEASE_VERSION }}</span>
       </div>
     </header>
@@ -145,18 +145,18 @@ onUnmounted(() => {
       <section class="home-section hifi-pane-green">
         <p class="section-eyebrow hifi-mono">01 · THE NAMED <ScpMark /></p>
         <h2 class="section-title named-scp-title hifi-heading">Introducing the Named <ScpMark /></h2>
-        <span class="named-scp-badge hifi-mono">PHUIRE RESEARCH · FIRST PUBLIC VIEWING</span>
-        <p class="section-lede">You are used to numbered, classified <ScpMark />s in traditional canon. Here, from PhuirE Research, we present the first Named <ScpMark />.</p>
+        <span class="named-scp-badge hifi-mono">PHUIRE RESEARCH · PUSHING THE BOULDER</span>
+        <p class="section-lede">You are used to numbered, classified <ScpMark plural /> in traditional canon. Here, from PhuirE Research, we present the first Named <ScpMark />.</p>
         <!-- C805 · THE HIGHLIGHT REWORK — the prose rides the Pewter Tessera subtext ground (light
              text on the dark gem-lit Onyx, never on the suite color) with the functional color law
              highlighting the key phrases inline (the /your-moat idiom). -->
         <div class="named-scp-ground hifi-subtext-ground">
           <div class="named-scp-body">
-            <p>The fundamental difference is that <span class="hifi-hl-base">Named <ScpMark />s are real</span> — based on the closest aspect of our reality that could otherwise fall into that unreal category. Artificial Intelligence can be <span class="hifi-hl-purple">anything we compose it to be</span>. You just experienced AI working in tandem with software to actualize the installation and <span class="hifi-hl-green">recursive improvement of software that improves while you use it</span>. And that AI improves with the strength of your Named <ScpMark />’s configuration, alongside each advancing version of AI that comes to the table.</p>
+            <p>The fundamental difference is that <span class="hifi-hl-base">Named <ScpMark plural /> are real</span> — based on the closest aspect of our reality that could otherwise fall into that unreal category. Artificial Intelligence can be <span class="hifi-hl-purple">anything we compose it to be</span>. You just experienced AI working in tandem with software to actualize the installation and <span class="hifi-hl-green">recursive improvement of software that improves while you use it</span>. And that AI improves with the strength of your Named <ScpMark />’s configuration, alongside each advancing version of AI that comes to the table.</p>
             <p>The Named <ScpMark /> is purpose-created to ride the wave of Artificial Intelligence, so that developers and more have a means to keep up in a rapidly changing economy. We now have a new concept of work: <span class="hifi-hl-purple">Autonomous Work</span>. Many utilize looped conventions to actualize entire software suites at once — the birth of Personalized Software at long last. But with it comes a question: how do you keep up in a marketplace where everyone can have their own personalized software, <span class="hifi-hl-red">gated behind untold amounts of compute</span>? Enter the trusty Open Source means. At the click of a <span class="hifi-hl-blue">Bridge Turn Over</span>, you can rapidly configure your live <ScpMark /> into actualizing any page. Further still, Suite 8s — <span class="hifi-hl-purple">the Suite Cascade System’s premiere agent architecture</span> — represent entire pages as a means of interacting with an AI. The AI is, effectively, the page or the computer program, held within carefully threaded bounds. It may be accessed at the cost of a <span class="hifi-hl-fuchsia">subscription</span>, while the software itself is free. The intention behind this software is to compete in a <span class="hifi-hl-yellow">positive-sums marketplace</span> built on the heavyweight that carries the world’s economy: <span class="hifi-hl-base">Open Source, on a net-metered tap</span>.</p>
             <p>The issue with Free is that it is uncapitalistic in reality — but only because it blocks the ability to perform <span class="hifi-hl-yellow">price discovery</span>. <span class="hifi-hl-base">The <ScpMark /> architecture is free.</span> The reality of a marketplace based on that architecture is the positive-sums exchange of the cost of actualizing the software, by energy and depreciation cost. <span class="hifi-hl-yellow">A Penny Market.</span></p>
             <p>Right now is <span class="hifi-hl-green">the Training Season</span>. A Suite 8 page can be hand-crafted, or built out through <span class="hifi-hl-purple">the Cascade Loop means</span> to suit whatever purpose you require. A website bound to a server is effectively any computer program, and this system can expand to further means of computation — the goal for the <ScpMark /> is the ability to <span class="hifi-hl-blue">relay inputs into off-screen rendered programs</span>. The <ScpMark /> you are interacting with is different from a website: it has <span class="hifi-hl-fuchsia">post-processing applied to it</span>. That comes at a cost, so we built out the basis components — <span class="hifi-hl-green">the SCS-Bridge component library</span> — to ease the difficulty of building your own custom solutions.</p>
-            <p>Keep in mind: this is <span class="hifi-hl-green">recursively improving software</span>, riding a <span class="hifi-hl-purple">compounding network effect</span>, with a marketplace of <span class="hifi-hl-yellow">penny transactions</span> as its accelerant. That seems small — and the system can be further refined on absolute utilization — but keep in frame what a million utilizations of a design presented to the marketplace means: <span class="hifi-hl-yellow">ten thousand dollars</span>. Not the largest amount. When that is five million, you are looking at <span class="hifi-hl-yellow">fifty thousand</span> — for the majority, enough to dig out of a debt hole. That is the purpose of the marketplace: to supply a means of keeping in touch, and enough pennies to contribute more time to exploring what is possible with self-evolving software based on your work. You can have this be automatic — but here we advise <span class="hifi-hl-base">the purposeful augmentation as your Diamond</span>. How can you improve your work? What <ScpMark />s from your work can you share that would assist others in improving theirs?</p>
+            <p>Keep in mind: this is <span class="hifi-hl-green">recursively improving software</span>, riding a <span class="hifi-hl-purple">compounding network effect</span>, with a marketplace of <span class="hifi-hl-yellow">penny transactions</span> as its accelerant. That seems small — and the system can be further refined on absolute utilization — but keep in frame what a million utilizations of a design presented to the marketplace means: <span class="hifi-hl-yellow">ten thousand dollars</span>. Not the largest amount. When that is five million, you are looking at <span class="hifi-hl-yellow">fifty thousand</span> — for the majority, enough to dig out of a debt hole. That is the purpose of the marketplace: to supply a means of keeping in touch, and enough pennies to contribute more time to exploring what is possible with self-evolving software based on your work. You can have this be automatic — but here we advise <span class="hifi-hl-base">the purposeful augmentation as your Diamond</span>. How can you improve your work? What <ScpMark plural /> from your work can you share that would assist others in improving theirs?</p>
           </div>
         </div>
         <!-- C805 · THE ACRONYM PANEL — the toolbar + body + ◆ list anatomy (the ORIGIN panel idiom). -->
@@ -180,14 +180,14 @@ onUnmounted(() => {
       <!-- ===================== MENTAL MODEL · the one map ===================== -->
       <section class="home-section hifi-pane-blue">
         <p class="section-eyebrow hifi-mono">02 · THE MENTAL MODEL</p>
-        <h2 class="section-title hifi-heading">Bridge ↔ <ScpMark />s ↔ Sessions ↔ Suite 8s</h2>
+        <h2 class="section-title hifi-heading">Bridge ↔ <ScpMark plural /> ↔ Sessions ↔ Suite 8s</h2>
         <p class="section-lede">
           One window, one bar, a small set of pages. Hold this shape and everything else follows.
         </p>
         <div class="model-map">
           <div class="model-node hifi-pane-base">
             <span class="model-name hifi-heading">The Bridge</span>
-            <span class="model-desc">Where you stand. The <code>scs</code> command — <span class="hifi-hl-blue">your operational center</span>. It installs <ScpMark />s and lists them, online and offline.</span>
+            <span class="model-desc">Where you stand. The <code>scs</code> command — <span class="hifi-hl-blue">your operational center</span>. It installs <ScpMark plural /> and lists them, online and offline.</span>
           </div>
           <span class="model-link hifi-mono">installs + manages</span>
           <div class="model-node hifi-pane-base">
@@ -382,7 +382,7 @@ onUnmounted(() => {
     </main>
 
     <footer class="home-footer">
-      <p class="footer-line hifi-mono">Suite Cascade System · <ScpMark /> Template · v{{ RELEASE_VERSION }}</p>
+      <p class="footer-line hifi-mono">Suite Cascade System · <ScpMark /> · v{{ RELEASE_VERSION }}</p>
       <p class="footer-sub hifi-label">The window rebuilds itself under you.</p>
     </footer>
   </div>

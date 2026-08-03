@@ -230,7 +230,24 @@ function onDockHover(e: MouseEvent): void {
 onMounted(() => { window.addEventListener('mouseover', onDockHover, true); });
 onUnmounted(() => { window.removeEventListener('mouseover', onDockHover, true); });
 
-const turnOverAlertDismissedAt = ref<number>(0);
+// THE DISMISS PERSISTS (the user's law): the ✕ is a decision — a reload (the turn-over
+// restart itself!) must not resurrect a dismissed alert. The dismissed requestedAt rides
+// localStorage; a NEWER request (later requestedAt) still renders — the banner remains
+// the helpful reminder for every FRESH directive, silent for the one already answered.
+const TOAB_DISMISS_KEY = 'scs-toab-dismissed-at';
+const turnOverAlertDismissedAt = ref<number>(
+  typeof localStorage !== 'undefined'
+    ? Number(localStorage.getItem(TOAB_DISMISS_KEY) ?? 0) || 0
+    : 0,
+);
+function dismissTurnOverAlert(at: number): void {
+  turnOverAlertDismissedAt.value = at;
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(TOAB_DISMISS_KEY, String(at));
+  } catch {
+    // storage unavailable — the session-scoped dismiss still holds
+  }
+}
 const activeTurnOverAlert = computed<{ requestedAt: number; source: string; purpose: string } | null>(() => {
   const gj = gitmController.gitmJson.value;
   const alert = gj?.turnOverAlert;
@@ -843,7 +860,7 @@ defineExpose({
         <span class="toab-purpose">{{ activeTurnOverAlert.purpose }}</span>
         <span class="toab-directive">This button lives in the TaskBar — track it down and press it. The bridge rebuilds and re-serves this SCP under you.</span>
       </span>
-      <button class="toab-dismiss" @click="turnOverAlertDismissedAt = activeTurnOverAlert.requestedAt" title="Hide (the alert clears itself when you Turn Over)">✕</button>
+      <button class="toab-dismiss" @click="dismissTurnOverAlert(activeTurnOverAlert.requestedAt)" title="Hide (stays hidden — the alert clears itself when you Turn Over)">✕</button>
     </div>
 
     <!-- Island Loading Area -->

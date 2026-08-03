@@ -1579,3 +1579,12 @@ body[data-standby-pulse="4"] .turn-over-a-btn:not(.disabled) {
   color: var(--color-blue-light, #93c5fd);
   text-shadow: -2px 2px 6px var(--shadow-purple, rgba(143, 72, 210, 0.6));
 }
+
+/* THE PLURAL (the SCP s gap cure) — rendered INSIDE the mark: the mark's Orbitron voice,
+   the SURROUNDING text's color (unbranded), pulled tight against P by swallowing the
+   parent letter-space. 'SCPs' reads as one word at every scale. */
+.hifi-scp-mark .scp-plural {
+  color: inherit;
+  letter-spacing: normal;
+  margin-left: -0.06em;
+}
