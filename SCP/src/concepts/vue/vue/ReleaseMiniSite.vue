@@ -59,6 +59,15 @@ const RELEASE_SITE: ReleaseCategory[] = [
     label: 'New in 0.943.0',
     features: [
       {
+        title: 'The update flow, reinforced',
+        color: 'yellow',
+        summary: 'The staging update rides a hardened circuit — any number of your SCPs at once, every failure naming its position, one gesture to finalize on whichever branch you stand.',
+        detail: [
+          'The whole circuit was reinforced in the field: concurrent updates share one source refresh instead of racing it, every SCP keeps its own update rail, and a failure lights the exact stage it stopped at with its reason — never a silent wall.',
+          'Two field-earned habits keep it smooth. Run an update with <span class="hifi-hl-yellow">all your changes committed</span> — the update lands on your current branch, and a clean tree is the ground the circuit expects. And if the <span class="hifi-hl-green">Turn Over prompt</span> does not appear after the resolver completes, that is a stochastic miss, not a failure: run the update again, anor tell the resolver session — <em>“Finalize the resolution — write the pending-0 resolution file and fire the Turn Over prompt.”</em> The apply lands the moment the resolution arrives.',
+        ],
+      },
+      {
         title: 'Updates that explain themselves',
         color: 'green',
         summary: 'The update diff now carries the exact preservation rules it was computed under — the resolver working inside your SCP reads the guard directly from the artifact.',

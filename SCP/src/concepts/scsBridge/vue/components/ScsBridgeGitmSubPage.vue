@@ -1389,7 +1389,9 @@ function spawnResolver(): void {
               <p :class="{ 'gitm-legend-active': diffEntryCount === 0 }">
                 <strong>Run Update</strong> — compares this app three ways: as it was installed,
                 as you have changed it, and the template as it is now. Always the entry point;
-                run it again any time to refresh the comparison.
+                run it again any time to refresh the comparison. <em>Run it with all your
+                changes committed</em> — the update lands on your current branch, and a clean
+                tree is the ground the circuit expects.
               </p>
               <p :class="{ 'gitm-legend-active': resolverRequired || resolverOptional }">
                 <strong>Spawn Resolver</strong> — <em>solid</em>: required — this cycle's
@@ -1403,6 +1405,13 @@ function spawnResolver(): void {
                 <strong>Apply</strong> — dimmed until every decision is resolved; once complete,
                 it lands the update into this app and commits it. Your work is preserved and the
                 app's identity is kept by rule.
+              </p>
+              <p>
+                <strong>If the Turn Over prompt does not appear</strong> after the resolver
+                completes, that is a stochastic miss, not a failure — run the update again,
+                anor tell the resolver session: <em>“Finalize the resolution — write the
+                pending-0 resolution file and fire the Turn Over prompt.”</em> The apply lands
+                the moment the resolution arrives.
               </p>
             </div>
           </div>
