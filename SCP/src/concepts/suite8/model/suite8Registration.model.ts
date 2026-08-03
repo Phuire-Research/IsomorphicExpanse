@@ -109,13 +109,4 @@ export const KNOWN_SUITE8_ENTRIES: Suite8Entry[] = [
     description: 'Cinnabar Dialectic Suite 8',
     color: '#9b2c2c',
   }),
-  // NDEP · NO SPACE — byte-matches Cascades/8_SUITES/IsomorphicExpanse/ AND
-  // Cascades/Extended/IsomorphicExpanse/ AND the NPC name the anchor resolves on.
-  // Without this entry suite8MenuWatch arms NO watcher for the designation and the
-  // page's keyed menuStage stays EMPTY_MENU_STAGE forever.
-  buildSuite8Registration({
-    name: 'IsomorphicExpanse',
-    description: 'Isomorphic game world · NPC dialog anchor · agent-authored menu',
-    color: '#3fb6a8',
-  }),
 ];

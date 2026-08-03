@@ -131,7 +131,6 @@ const DEFAULT_LANDING_MUXONOMIC: MuxonomicConfig<'default'> = {
   },
 };
 
-import { isomorphicExpanseMuxonomic } from '../isomorphicExpanse/isomorphicExpanse.muxonomy';
 import { graphiteScribeMuxonomic } from '../graphiteScribe/graphiteScribe.muxonomy';
 const REGISTERED_MUXONOMICS: MuxonomicConfig[] = [
   DEFAULT_LANDING_MUXONOMIC,
@@ -145,8 +144,6 @@ const REGISTERED_MUXONOMICS: MuxonomicConfig[] = [
   suite8Muxonomic,
   cadmiumMuxonomic,
   suiteCascadeMuxonomic,
-  // IE-LOCAL (regen-by-mapping · restored C833 — the C822 byte-mirror clobbered it):
-  isomorphicExpanseMuxonomic,
   graphiteScribeMuxonomic,
   // GITM PAGE · REGISTERED page entry · inserted AFTER the suiteCascadeMuxonomic AIME-3
   // anchor (anchor line above undisturbed). Nav order 5 (after Suite Cascade's order 4).
@@ -1018,89 +1015,6 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
     res.json({ name: req.params.designation, cascadeJson, activeCascadeFiles });
   });
 
-  // GET — LAST-TURN FLOW · the FULL last exchange of the designation's anchor session. The bridge's
-  // persisted row fields (transcriptLastUserInput/transcriptLastModelOutput) hold only the turn's
-  // FINAL text block — each block replaces the last at the watcher — so a multi-part reply arrives
-  // cut to its tail. This route reads the anchor's transcript JSONL server-side and returns the
-  // whole exchange: the last real user turn + EVERY assistant text block after it. The client
-  // paginates it (the persisted fields stay the instant floor). READ-ONLY · never throws:
-  // absent anywhere along the chain → 404 honest.
-  expressApp.get('/suite8-last-turn/:designation', (req, res) => {
-    const designation = req.params.designation;
-    if (!designation || designation.includes('/') || designation.includes('\\') || designation.includes('..')) {
-      res.status(404).json({ ok: false, error: 'bad designation' });
-      return;
-    }
-    // The bridge registry lives at the WORKSPACE root — same walk-up ladder as the Extended resolver.
-    let sessionsPath: string | null = null;
-    let walk = process.cwd();
-    for (let i = 0; i < 7; i += 1) {
-      const candidate = path.resolve(walk, 'Cascades', 'Bridge', 'sessions.json');
-      try {
-        if (fs.statSync(candidate).isFile()) { sessionsPath = candidate; break; }
-      } catch { /* absent on this root → walk up */ }
-      const parent = path.dirname(walk);
-      if (parent === walk) break;
-      walk = parent;
-    }
-    if (!sessionsPath) { res.status(404).json({ ok: false, error: 'no bridge registry' }); return; }
-    try {
-      const parsed = JSON.parse(fs.readFileSync(sessionsPath, 'utf-8')) as unknown;
-      const rows: Record<string, unknown>[] = Array.isArray(parsed)
-        ? (parsed as Record<string, unknown>[])
-        : typeof parsed === 'object' && parsed !== null
-          ? (Object.values(parsed as Record<string, unknown>).flat().filter(
-              (r): r is Record<string, unknown> => typeof r === 'object' && r !== null,
-            ))
-          : [];
-      // The anchor law (s8Anchor.model resolveS8Anchor): suite8Name match + isAnchor authoritative.
-      const anchor = rows.find((r) => r.suite8Name === designation && r.isAnchor === true);
-      const transcriptPath = typeof anchor?.transcriptPath === 'string' ? anchor.transcriptPath : '';
-      if (!transcriptPath) { res.status(404).json({ ok: false, error: 'no anchor transcript' }); return; }
-      const lines = fs.readFileSync(transcriptPath, 'utf-8').split('\n');
-      type Block = { type?: string; text?: string };
-      type Entry = { type?: string; isMeta?: boolean; message?: { content?: string | Block[] } };
-      const entries: Entry[] = [];
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try { entries.push(JSON.parse(line) as Entry); } catch { /* partial tail write → skip */ }
-      }
-      // The last REAL user turn: a user entry carrying prompt text (never a tool_result relay).
-      const userText = (e: Entry): string => {
-        const c = e.message?.content;
-        if (typeof c === 'string') return c.trim();
-        if (Array.isArray(c)) {
-          if (c.some((b) => b.type === 'tool_result')) return '';
-          return c.filter((b) => b.type === 'text' && typeof b.text === 'string')
-            .map((b) => (b.text as string).trim()).filter(Boolean).join('\n\n');
-        }
-        return '';
-      };
-      let lastUserIdx = -1;
-      let userTurn = '';
-      for (let i = entries.length - 1; i >= 0; i -= 1) {
-        const e = entries[i];
-        if (e.type !== 'user' || e.isMeta === true) continue;
-        const text = userText(e);
-        if (text) { lastUserIdx = i; userTurn = text; break; }
-      }
-      if (lastUserIdx < 0) { res.status(404).json({ ok: false, error: 'no user turn' }); return; }
-      const modelBlocks: string[] = [];
-      for (let i = lastUserIdx + 1; i < entries.length; i += 1) {
-        const e = entries[i];
-        if (e.type !== 'assistant') continue;
-        const c = e.message?.content;
-        if (!Array.isArray(c)) continue;
-        for (const b of c) {
-          if (b.type === 'text' && typeof b.text === 'string' && b.text.trim()) modelBlocks.push(b.text.trim());
-        }
-      }
-      res.json({ ok: true, userTurn, modelTurn: modelBlocks.join('\n\n') });
-    } catch {
-      res.status(404).json({ ok: false, error: 'transcript unreadable' });
-    }
-  });
-
   // GET — THE MENU FLOOR (1A-prime · the ODCF doctrine lifted from CadmiumLanding into the
   // generic circuit). The ShatteriteMenu component self-queries THIS route on mount for its
   // designation's menu.json — the timing-immune display-on-viewing floor beneath the STCP
@@ -1176,162 +1090,6 @@ export const vueSSRPrinciple: VueSSRPrincipleType = ({ concepts_, k_ }) => {
       res.json({ currentStageIndex: 0, stages: [parsed] });
     } catch {
       res.status(404).json({ ok: false, error: 'menu.json absent anor malformed' });
-    }
-  });
-
-  // Cycle 8 · Salvo B(ii) · MOCH — /isomorphicExpanse-menu/:designation
-  // ============================================
-  //
-  // THE HYDRATE-EVERY-LOAD LAW. The Bridge Turn Over mechanism REINFORCES the design: a Turn Over
-  // restarts the SCP, so every page load is a COLD START. Menu options must therefore be hydrated
-  // from disk on EVERY load whenever menu.json is present — persistence through reloads is the
-  // requirement, not a fallback. The live STCP relay (SMRP) covers CHANGES while a page is open;
-  // this route covers the already-present-on-connect case, which is the common one after a Turn Over.
-  //
-  // Why this exists: the BOCR backfill arm never delivered for this designation (a fresh connect
-  // received sibling concepts' backfills but ZERO IsomorphicExpanse actions), so a reload silently
-  // lost the authored menu. Cadmium never showed the defect because it has had its MOCH route all
-  // along — this is the same tried-and-true pattern applied to the minted concept.
-  //
-  // Two-roots walk-up per H3 (the anchor's cwd is the WORKSPACE root; Extended/ is SCP-LOCAL).
-  // Traversal-guarded: the resolved dir must stay inside the Extended base on whichever root wins.
-  const EMPTY_IE_MENU_STAGE = { stageIndex: -1, title: '', prompt: '', options: [] };
-  expressApp.get('/isomorphicExpanse-menu/:designation', (req, res) => {
-    const designation = req.params.designation;
-    // Reject separators/traversal outright — the designation is a single directory NAME (NDEP).
-    if (!designation || designation.includes('/') || designation.includes('\\') || designation.includes('..')) {
-      res.json(EMPTY_IE_MENU_STAGE);
-      return;
-    }
-    const roots: string[] = [process.cwd()];
-    let dir = process.cwd();
-    for (let i = 0; i < 6; i += 1) {
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-      roots.push(dir);
-    }
-    for (const root of roots) {
-      const extendedBase = path.resolve(root, 'Cascades', 'Extended');
-      const candidate = path.resolve(extendedBase, designation, 'menu.json');
-      if (candidate !== extendedBase && !candidate.startsWith(extendedBase + path.sep)) continue;
-      try {
-        const raw = fs.readFileSync(candidate, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed.stageIndex === 'number' && Array.isArray(parsed.options)) {
-          res.json(parsed);
-          return;
-        }
-      } catch {
-        /* absent anor malformed → the next root (the two-roots walk-up) */
-      }
-    }
-    res.json(EMPTY_IE_MENU_STAGE);
-  });
-  // ============================================
-  // IE-D2 · THE D-O PAGE SURFACE — Extended RI document read/write (sealed design 3C)
-  // ============================================
-  //
-  // The two-pane home surface reads the ACTIVE plan/trajectory pair from the LIVE cascade
-  // state (the C702 relay). These two routes serve the surface's two SIDE affordances:
-  //   - /isomorphicExpanse-doc-tiers/:designation  (GET)  — enumerate PRIOR-tier filenames
-  //     WITHOUT loading their content (falling-out-of-scope law as UI · 2A tier menu).
-  //   - /isomorphicExpanse-doc-save               (POST) — write authority split by nature (3C):
-  //     ONLY a DIAMOND-*.md file (the plan · Ego · prunable · page-editable) may be written.
-  //     An ONYX-*.md (the trajectory · Lambda · sacred · session-written) is REJECTED.
-  //
-  // Both resolve the SCP-LOCAL Cascades/Extended/<designation>/ folder via the SAME two-roots
-  // walk-up + traversal guard the /isomorphicExpanse-menu route uses (4A · self-encapsulated).
-  // The designation is a single directory NAME (NDEP) — separators/traversal are rejected outright.
-  // C833 RESTORE NOTE · the IE-named routes below REUSE the template's generic
-  // resolveExtendedDesignationDir (declared in the generic D-O block above) — the
-  // pre-C822 IE-local resolver declaration is NOT re-declared (one resolver, two route
-  // families). Restored from cf05bb9^ after the C822 byte-mirror clobbered the IE-local
-  // block (vue.principle.ts is a REGEN-BY-MAPPING file, never a byte-mirror file).
-
-  // GET — enumerate prior-tier document filenames (DIAMOND-TIER-*.md / ONYX-TIER-*.md) WITHOUT
-  // loading their content. The ACTIVE pair (the highest tier of each) is served by the live cascade
-  // state; "prior" = every OTHER tier document present in the folder. READ-ONLY · AFPR → 200 [].
-  expressApp.get('/isomorphicExpanse-doc-tiers/:designation', (req, res) => {
-    const resolved = resolveExtendedDesignationDir(req.params.designation);
-    if (!resolved) {
-      res.json({ priorTiers: [] });
-      return;
-    }
-    try {
-      const docs = fs
-        .readdirSync(resolved.dir)
-        .filter((f) => /^(DIAMOND|ONYX)-TIER-\d+\.md$/i.test(f))
-        .sort();
-      // The ACTIVE pair = the highest-numbered DIAMOND + ONYX (what the panes render live).
-      // Everything else is a PRIOR tier — enumerate names only (never read their bodies).
-      const tierNum = (f: string): number => {
-        const m = f.match(/-TIER-(\d+)\./i);
-        return m ? Number(m[1]) : -1;
-      };
-      const highest = (prefix: RegExp): string | null => {
-        const of = docs.filter((f) => prefix.test(f));
-        if (of.length === 0) return null;
-        return of.reduce((a, b) => (tierNum(a) >= tierNum(b) ? a : b));
-      };
-      const activeDiamond = highest(/^DIAMOND/i);
-      const activeOnyx = highest(/^ONYX/i);
-      const priorTiers = docs.filter((f) => f !== activeDiamond && f !== activeOnyx);
-      res.json({ priorTiers });
-    } catch {
-      res.json({ priorTiers: [] });
-    }
-  });
-
-  // POST — write authority split by nature (3C). Body: { designation, filePath, markdown }.
-  // ONLY a DIAMOND-*.md basename is writable (the plan · Ego · prunable). ONYX (the trajectory ·
-  // Lambda · sacred) is REJECTED — it is session-written only. The filePath must land INSIDE the
-  // resolved Extended/<designation>/ folder (traversal-guarded). The suiteCascade watcher's chokidar
-  // 'change' event then re-reads + relays the new activeCascadeFiles (no direct state write here).
-  expressApp.post('/isomorphicExpanse-doc-save', express.json(), (req, res) => {
-    const { designation, filePath, markdown } = (req.body ?? {}) as {
-      designation?: string;
-      filePath?: string;
-      markdown?: string;
-    };
-    if (!designation || !filePath || typeof markdown !== 'string') {
-      res.status(400).json({ ok: false, error: 'designation, filePath, and markdown are required' });
-      return;
-    }
-    const resolved = resolveExtendedDesignationDir(designation);
-    if (!resolved) {
-      res.status(404).json({ ok: false, error: 'designation folder not found' });
-      return;
-    }
-    // 3C · ONLY the plan (DIAMOND) is page-writable; the trajectory (ONYX) is session-written.
-    const basename = path.basename(filePath);
-    if (!/^DIAMOND-.*\.md$/i.test(basename)) {
-      res
-        .status(403)
-        .json({ ok: false, error: 'only the plan (DIAMOND-*.md) is editable from the page' });
-      return;
-    }
-    // C727 · 3 THE Working/-AWARE SUBTREE RESOLVE — the pair now lives one level down in Working/.
-    // Preserve the Working/ subdir when the incoming path's parent is Working/, else keep the flat
-    // basename (back-compat). The traversal guard below still holds (Working/ is INSIDE resolved.dir);
-    // the DIAMOND-only law above is intact (basename is still the gated filename).
-    const parentDir = path.basename(path.dirname(filePath));
-    const rel = parentDir === 'Working' ? path.join('Working', basename) : basename;
-    const target = path.resolve(resolved.dir, rel);
-    if (target !== resolved.dir && !target.startsWith(resolved.dir + path.sep)) {
-      res.status(403).json({ ok: false, error: 'path escapes the designation folder' });
-      return;
-    }
-    try {
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-    } catch {
-      /* best-effort · the write below surfaces any genuine fault as a 500 */
-    }
-    try {
-      fs.writeFileSync(target, markdown, 'utf-8');
-      res.json({ ok: true });
-    } catch (err) {
-      res.status(500).json({ ok: false, error: `write failed: ${String(err)}` });
     }
   });
 

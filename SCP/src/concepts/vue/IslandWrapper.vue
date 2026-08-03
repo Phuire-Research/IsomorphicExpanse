@@ -617,7 +617,6 @@ const islandRegistry: Record<string, () => Promise<Component>> = {
   // SAMLS swap flips suite8HomeNavigation.isMainLanding: true.
   suite8Home: () => import('../suite8/vue/Suite8HomeLanding.vue'),
   graphiteScribe: () => import('../graphiteScribe/vue/GraphiteScribeHomeLanding.vue'),
-  isomorphicExpanse: () => import('../isomorphicExpanse/vue/IsomorphicExpanseHomeLanding.vue'),
   cadmium: () => import('../cadmium/vue/CadmiumLanding.vue'),
   // Band B-6 HCD · the SuiteCascade Landing island (IUPA per-page muxified · the
   // deferred B-4 client face — serverToClient relays now land here).

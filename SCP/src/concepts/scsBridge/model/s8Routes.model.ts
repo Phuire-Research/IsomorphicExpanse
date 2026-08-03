@@ -29,12 +29,6 @@ export const s8MenuPath = (designation: string): string =>
 export const s8DocTiersPath = (designation: string): string =>
   `/suite8-doc-tiers/${encodeURIComponent(designation)}`;
 
-/** GET — the FULL last exchange of the designation's anchor session (Last-Turn Flow · the
- *  persisted row fields hold only the turn's final text block; this reads the transcript
- *  JSONL server-side and returns the whole turn for the dialog's paginated held exchange). */
-export const s8LastTurnPath = (designation: string): string =>
-  `/suite8-last-turn/${encodeURIComponent(designation)}`;
-
 /** POST — the Diamond-only page-edit save (ONYX 403 by nature · body carries designation). */
 export const S8_DOC_SAVE_PATH = '/suite8-doc-save';
 

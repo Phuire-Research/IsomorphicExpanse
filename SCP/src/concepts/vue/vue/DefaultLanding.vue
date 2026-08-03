@@ -37,7 +37,7 @@ import ScpMark from '../components/ScpMark.vue';
 type ClientDeck = any;
 
 // The SCS-Bridge release · version = Cascade Cycle (see Release Notes below).
-const RELEASE_VERSION = '0.943.0';
+const RELEASE_VERSION = '0.944.0';
 
 // ===================== RELEASE NOTES (D-HOME R3) =====================
 // The 0.697.0 notes were the FIRST public stamp; 0.811.0 (R4) added the C702-C809 delta;
@@ -271,7 +271,7 @@ onUnmounted(() => {
           <span class="release-stamp hifi-stamp hifi-stamp-purple">version = Cascade Cycle</span>
         </h2>
         <p class="section-lede">
-          <span class="hifi-hl-green">Stamped 2026-07-28 — the first public release, carried forward through 0.943.0.</span>
+          <span class="hifi-hl-green">Stamped 2026-07-28 — the first public release, carried forward through 0.944.0.</span>
           The bridge's <span class="hifi-hl-purple">version number IS its Cascade Cycle</span> — each cycle of the method advances it.
           This release crossed the bar for <span class="hifi-hl-base">the first public product</span>. This is the full tour — pick a
           feature on the left to read it.

@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "current": "0.943.0",
+  "current": "0.944.0",
   "muxameter": {
-    "cli": 9,
-    "scp": 11
+    "cli": 10,
+    "scp": 12
   },
   "releases": [
     {
-      "id": "v0943",
-      "version": "0.943.0",
-      "label": "New in 0.943.0",
+      "id": "v0944",
+      "version": "0.944.0",
+      "label": "New in 0.944.0",
       "muxameter": {
-        "cli": 9,
-        "scp": 11
+        "cli": 10,
+        "scp": 12
       },
-      "magnitude": 2,
+      "magnitude": 5,
       "features": [
         {
           "title": "The update flow, reinforced",
@@ -25,6 +25,38 @@
             "Two field-earned habits keep it smooth. Run an update with <span class=\"hifi-hl-yellow\">all your changes committed</span> — the update lands on your current branch, and a clean tree is the ground the circuit expects. And if the <span class=\"hifi-hl-green\">Turn Over prompt</span> does not appear after the resolver completes, that is a stochastic miss, not a failure: run the update again, anor tell the resolver session — <em>“Finalize the resolution — write the pending-0 resolution file and fire the Turn Over prompt.”</em> The apply lands the moment the resolution arrives."
           ]
         },
+        {
+          "title": "Your SCPs, curated — Archive, Restore, Delete",
+          "color": "orange",
+          "summary": "The install roster grows a second shelf: archive finished SCPs out of the working set, restore them intact when they matter again, and delete with a deliberate guard.",
+          "detail": [
+            "The Installation page now carries two tabs — <span class=\"hifi-hl-blue\">Installed</span> and <span class=\"hifi-hl-orange\">Archived</span>. Archiving moves the whole SCP into a vault beside the working set — nothing is lost, it simply leaves the daily roster. Restore brings it back exactly as it left, git and all.",
+            "Deletion is deliberate by design: an installed SCP asks you to <span class=\"hifi-hl-red\">type its name</span> before it goes; an archived one asks a plain yes-anor-no. The template itself is <span class=\"hifi-hl-base\">system-protected</span> — the ground every install builds from can be neither archived nor deleted.",
+            "Work-branch worktrees are first-class citizens of the vault: a worktree SCP wears its own hatched marking, a live SCP refuses the vault until it is stopped, and the git linkage is repaired on the way in anor out so both trees stay whole. Removing an instance from the Session Manager is now one clean acknowledgment — no more stuck 'Removing…'."
+          ]
+        },
+        {
+          "title": "Release notes that know your SCP",
+          "color": "green",
+          "summary": "The Update page now carries the release notes themselves — filtered to what YOUR SCP would actually gain, each release weighed with a magnitude, before you decide to update.",
+          "detail": [
+            "Every release is recorded in a versioned manifest the bridge reads live — anor straight from your own machine in a development loop. The Update page folds it open as <span class=\"hifi-hl-green\">What this update carries</span>: the releases your SCP has not yet landed, each with its features in full and a <span class=\"hifi-hl-yellow\">magnitude</span> of one to five marking the degree of change it brings.",
+            "The filter keys on what your SCP has <span class=\"hifi-hl-blue\">actually applied</span> — not the version string — so an SCP that skipped three releases sees all three, and one that is current sees the plain release notes with nothing pending. The same notes render on the Home page as the full tour, from one shared source.",
+            "When an update is pending, the panel <span class=\"hifi-hl-green\">opens itself</span> — the notes are the first thing you meet on the Update page. It folds away the moment the update process begins, yielding the floor to the review rail; your own toggle always wins over the automatic motion."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v0943",
+      "version": "0.943.0",
+      "label": "New in 0.943.0",
+      "muxameter": {
+        "cli": 9,
+        "scp": 11
+      },
+      "magnitude": 1,
+      "features": [
         {
           "title": "Updates that explain themselves",
           "color": "green",

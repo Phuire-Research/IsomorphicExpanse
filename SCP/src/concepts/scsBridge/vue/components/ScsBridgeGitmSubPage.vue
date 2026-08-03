@@ -175,9 +175,15 @@ const carriesIncoming = computed<boolean>(() => {
 // plain release notes, minus the discriminator.
 const carriesMode = computed<'current' | 'differential'>(() =>
   scpUpdateNeeded.value || carriesIncoming.value ? 'differential' : 'current');
-// The collapsible 'What this update carries' panel — collapsed by default (a fold above Run Update).
+// The collapsible 'What this update carries' panel. AUTO-PRESENTED: when an update is
+// incoming and the engine is idle, the panel opens itself — the notes are the first thing
+// met; it folds away the moment the update process begins (Run Update anor a hydrated
+// in-flight rail), yielding the floor to the review rail. A user's own toggle is
+// sovereign — once touched, the auto never re-opens over it.
 const carriesOpen = ref<boolean>(false);
+const carriesUserTouched = ref<boolean>(false);
 function toggleCarries(): void {
+  carriesUserTouched.value = true;
   carriesOpen.value = !carriesOpen.value;
 }
 
@@ -737,6 +743,20 @@ const showUpdateSection = computed<boolean>(() => {
   return status.diffPresent || status.stage !== 'idle';
 });
 
+// THE AUTO-PRESENTED FOLD (placed after its signals — isUpdating/showUpdateSection above):
+// incoming + idle ⇒ open (the informed decision leads); the process beginning ⇒ collapse.
+watch(
+  () => [carriesMode.value, isUpdating.value, showUpdateSection.value] as const,
+  ([mode, updating, sectionLive]) => {
+    if (updating || sectionLive) {
+      carriesOpen.value = false;
+      return;
+    }
+    if (mode === 'differential' && !carriesUserTouched.value) carriesOpen.value = true;
+  },
+  { immediate: true },
+);
+
 // APPLY-SUCCESS SIGNAL (bridge C293) — the update has LANDED and the bridge is inviting the finalize
 // gesture. The bridge stamps updateStatus = { stage: 'idle', note: UPDATE_APPLIED_NOTE } after an
 // auto-apply. When both hold, the Apply Success screen renders INSTEAD of the (now stale) stage rail +
@@ -780,6 +800,7 @@ const conferenceCount = computed<number>(() => props.updateDiff?.summary.confere
 // Run Update — fires the staging-update engine through the existing gitm-action emit pipe.
 function runUpdate(): void {
   if (isUpdating.value || isGitmActing.value) return;
+  carriesOpen.value = false;
   fireAction('gitm_run_update', {});
 }
 
