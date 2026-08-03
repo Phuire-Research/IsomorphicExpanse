@@ -161,6 +161,20 @@ const appliedScp = computed<number | null>(() => props.versionCheck?.appliedScpM
 // The incoming releases (LEG 3's relay). The mount also falls back to its OWN local updates.json
 // when this is absent — so the panel renders even on a pre-MD-UM bridge (the local wings stand in).
 const differentialReleases = computed(() => props.versionCheck?.releaseManifest?.releases ?? null);
+// Whether any relayed wing is INCOMING for this SCP (muxameter.scp > appliedScp) — the same
+// discriminator the mount runs, computed here to pick the panel's mode.
+const carriesIncoming = computed<boolean>(() => {
+  const wings = differentialReleases.value ?? [];
+  const applied = appliedScp.value;
+  const floor = typeof applied === 'number' ? applied : -Infinity;
+  return wings.some((w) => (typeof w?.muxameter?.scp === 'number' ? w.muxameter.scp : -Infinity) > floor);
+});
+// The panel is ALWAYS present on the Update tab (the user decides whether an update is worth
+// taking from the notes themselves). Mode: an update is due anor incoming wings exist ⇒
+// 'differential' (the discriminator splits Incoming vs Operating); current ⇒ 'current' — the
+// plain release notes, minus the discriminator.
+const carriesMode = computed<'current' | 'differential'>(() =>
+  scpUpdateNeeded.value || carriesIncoming.value ? 'differential' : 'current');
 // The collapsible 'What this update carries' panel — collapsed by default (a fold above Run Update).
 const carriesOpen = ref<boolean>(false);
 function toggleCarries(): void {
@@ -1193,13 +1207,11 @@ function spawnResolver(): void {
         <!-- ═ MD-UM · LEG 4 · WHAT THIS UPDATE CARRIES ═ — the collapsible differential panel ABOVE
              the Run Update legend. Mounts the portable release holder in DIFFERENTIAL mode, fed the
              applied increment (THE SHARPENED LAW · scp.config.json scsMuxameterScp) + the incoming
-             releases (LEG 3's relay). Collapsed by default (a fold, not the focus). Renders whenever
-             an scp-class update is due; the holder itself shows the honest 'you are current' empty
-             state when nothing is pending. Citation: DIAMOND-UPDATE-MANIFEST.md §4 (the differential). -->
-        <section
-          v-if="scpUpdateNeeded || differentialReleases"
-          class="gitm-carries hifi-pane-base"
-        >
+             releases (LEG 3's relay). Collapsed by default (a fold, not the focus). ALWAYS present
+             on the Update tab — the user decides worth from the notes. Mode: incoming wings anor a
+             due update ⇒ 'differential' (the discriminator); current ⇒ 'current' (the plain release
+             notes, minus the discriminator). Citation: DIAMOND-UPDATE-MANIFEST.md §4 (the differential). -->
+        <section class="gitm-carries hifi-pane-base">
           <button
             type="button"
             class="gitm-carries-toggle hifi-mono"
@@ -1207,11 +1219,11 @@ function spawnResolver(): void {
             @click="toggleCarries"
           >
             <span class="gitm-carries-caret">{{ carriesOpen ? '▾' : '▸' }}</span>
-            What this update carries
+            {{ carriesMode === 'differential' ? 'What this update carries' : 'Release Notes · you are current' }}
           </button>
           <div v-if="carriesOpen" class="gitm-carries-body">
             <ReleaseMiniSite
-              mode="differential"
+              :mode="carriesMode"
               :applied-scp="appliedScp"
               :releases="differentialReleases"
             />
