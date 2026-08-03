@@ -1932,39 +1932,16 @@ function cancelDelete(): void {
 function fireDelete(): void {
   if (!deleteArmed.value) return; // disarmed on any mismatch — never fires the wrong instance.
   const name = deleteOpenFor.value;
-  deletePhase.value = 'awaiting-token';
-  // CALL 1 (no token) — the bridge mints pendingConfirm sealed to this instanceName; the reactive
-  // gitmJson relay carries pendingConfirm.token back → the watch below fires CALL 2.
-  controller?.triggerGitmAction('gitm_worktree_remove', { originScpName: name, instanceName: name });
-}
-
-// THE TWO-CALL CLOSE — when a pendingConfirm for OUR instanceName lands on the reactive gitmJson
-// while we are awaiting it, fire CALL 2 with the minted token (+ force, so a dirty tree still clears
-// behind the typed-name arm · the destructive intent is already explicit). The watch is the return
-// channel the void setter lacks (the ACK-only dispatch cannot carry the token itself).
-if (gitmController) {
-  watch(
-    () => gitmController.gitmJson.value?.pendingConfirm ?? null,
-    (pending) => {
-      if (deletePhase.value !== 'awaiting-token') return;
-      const name = deleteOpenFor.value;
-      if (name === '' || pending == null) return;
-      if (pending.action !== 'gitmWorktreeRemove') return;
-      const token = pending.token;
-      if (typeof token !== 'string' || token === '') return;
-      deletePhase.value = 'idle';
-      // CALL 2 — the sealed token + the typed-match name + force (the tree may be dirty; the user
-      // already typed the exact name to arm this destructive act).
-      controller?.triggerGitmAction('gitm_worktree_remove', {
-        originScpName: name,
-        instanceName: name,
-        confirmToken: token,
-        force: true,
-      });
-      cancelDelete();
-      window.setTimeout(() => void refreshScpCommandRoster(), 1200);
-    },
-  );
+  // MD-ARC+C W7b · THE STUCK-REMOVE CURE (the AmberlightStudio--wt field break): the prior
+  // WATCHKEY two-call awaited pendingConfirm on THIS surface's relayed gitmJson — but a
+  // NON-pointer origin's token lands on the ORIGIN's OWN rail (MD-C M7), which an OFFLINE
+  // instance never relays here → 'Removing…' forever. The delete now rides the Wave-7
+  // scp_delete: ONE ack call — WAPF H2 runs `git worktree remove --force` from the PARENT
+  // (git functionality maintained) + registry removal + slice/watcher teardown. The
+  // typed-name arm above IS the destructive confirmation; no token round, no stuck channel.
+  controller?.triggerGitmAction('scp_delete', { scpName: name });
+  cancelDelete();
+  window.setTimeout(() => void refreshScpCommandRoster(), 1200);
 }
 
 // W6b · THE DYNAMIC POLL (SCM W6) · the poll idiom kept, the interval made dynamic. 1s WHILE any
