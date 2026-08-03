@@ -25,7 +25,16 @@
  * Content is transcribed VERBATIM from the D-HOME-R3 salvo files (one per category) — the firewall
  * already governed the copy; no rewrites here.
  */
+// MD-UM · LEG 2 (the portable holder) · THE VERSIONED UPDATE MANIFEST. The four pinned
+// release wings RETIRE from this component's mixed array into the versioned local manifest
+// (updates.json · the TEMPLATE-class file · build-time Vite JSON import — no runtime fetch
+// for the local side). The 18 evergreen tour categories (older wings + the feature tour)
+// stay in EVERGREEN_TOUR below. The current-mode render composes updates.releases (the 4
+// pinned wings) ahead of EVERGREEN_TOUR — the SAME 22-category order the RELEASE_SITE array
+// carried, so the Home Page mount (<ReleaseMiniSite /> · mode 'current') renders IDENTICALLY.
+// Cite: DIAMOND-UPDATE-MANIFEST.md §2 (the importable holder) + §4 (the differential relay).
 import { ref, computed } from 'vue';
+import updates from './updates.json';
 
 // The eight functional color tokens the salvo copy uses — each has an existing hifi-pane-{token}
 // head family and a --color-{token}-light accent in src/style.css.
@@ -52,94 +61,69 @@ interface ReleaseCategory {
   features: ReleaseFeature[];
 }
 
-// The single typed structure — built from the salvo files' content, VERBATIM.
-const RELEASE_SITE: ReleaseCategory[] = [
-  {
-    id: 'v0943',
-    label: 'New in 0.943.0',
-    features: [
-      {
-        title: 'The update flow, reinforced',
-        color: 'yellow',
-        summary: 'The staging update rides a hardened circuit — any number of your SCPs at once, every failure naming its position, one gesture to finalize on whichever branch you stand.',
-        detail: [
-          'The whole circuit was reinforced in the field: concurrent updates share one source refresh instead of racing it, every SCP keeps its own update rail, and a failure lights the exact stage it stopped at with its reason — never a silent wall.',
-          'Two field-earned habits keep it smooth. Run an update with <span class="hifi-hl-yellow">all your changes committed</span> — the update lands on your current branch, and a clean tree is the ground the circuit expects. And if the <span class="hifi-hl-green">Turn Over prompt</span> does not appear after the resolver completes, that is a stochastic miss, not a failure: run the update again, anor tell the resolver session — <em>“Finalize the resolution — write the pending-0 resolution file and fire the Turn Over prompt.”</em> The apply lands the moment the resolution arrives.',
-        ],
-      },
-      {
-        title: 'Updates that explain themselves',
-        color: 'green',
-        summary: 'The update diff now carries the exact preservation rules it was computed under — the resolver working inside your SCP reads the guard directly from the artifact.',
-        detail: [
-          'Every SCP update is a three-way merge guarded by preservation rules: your SCP’s identity — its name, its config — is never clobbered by a template default, and certain files are never deleted. Until now those rules lived only inside the bridge, where the resolver working <span class="hifi-hl-green">inside your SCP</span> had no way to read them. The diff is now self-describing: its provenance block pins the exact rules the merge was computed under.',
-          'The apply step prefers those pinned rules too — so the rules that <span class="hifi-hl-blue">computed</span> your update are the rules that <span class="hifi-hl-blue">land</span> it, even when the update itself is changing the bridge mid-flight. Smoother updates, with the guard in plain sight.',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'v0942',
-    label: 'New in 0.942.0',
-    features: [
-      {
-        title: 'Every SCP holds its own anchor',
-        color: 'green',
-        summary: 'Sessions, anchors, and bindings are now scoped to the SCP that owns them — two SCPs can each carry the same Suite, side by side, without ever crossing.',
-        detail: [
-          'Before, a Suite’s anchor was found by NAME alone — the first match across every SCP. A fresh SCP’s page could adopt ANOTHER SCP’s session: an old, empty terminal surfacing where a new anchor belonged, a resume of a conversation that never existed, a menu authored into the wrong SCP’s files. The whole identity chain is now <span class="hifi-hl-green">per-SCP</span>: every spawn carries its own SCP’s name, every anchor claim stays within its SCP, a re-engaged session keeps its Suite identity, and a session with nothing to resume boots fresh instead of dying.',
-          'The research workers ride the same ground: a dispatched Topic Researcher now boots <span class="hifi-hl-blue">bare</span> — its streamed plan IS its directive — while the page’s own anchor keeps its full onboarding, primed into motion.',
-        ],
-      },
-      {
-        title: 'Spawn plainly, anchor deliberately',
-        color: 'blue',
-        summary: 'The Session Manager spawns PLAIN instances — no onboarding, no anchor claim. Anchoring belongs to the Suite’s own page, and the Suite list reads live from your SCP’s folder.',
-        detail: [
-          'The Session Manager’s two lanes are now named: <span class="hifi-hl-blue">Spawn General Session</span> above, and the Suite 8 dropdown below — select a Suite to enable its spawn. A Session-Manager spawn is a plain instance: it never claims a page’s anchor and never takes the onboarding seed. The page’s own menu remains the one door that mints, anchors, and primes.',
-          'The Suite dropdown scans YOUR SCP’s own Suite folder fresh on every open — a Suite you just created appears immediately, turn-overs included. And a new chip on every Suite menu reads <span class="hifi-hl-green">Anchor: Specified</span> — your page addresses its own SCP’s anchor; the Local cross-SCP tabbing it teases is a coming refinement.',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'v0941',
-    label: 'New in 0.941.0',
-    features: [
-      {
-        title: 'The Forge cycle, completed',
-        color: 'green',
-        summary: 'The Entourage Forge engages the moment a page is created — and the turn-over becomes the trigger at the END of its work, resolving the right branch on its own.',
-        detail: [
-          'Before, a fresh page demanded a turn-over before the Forge could even begin — and on a brand-new app with a default git tree, that demand pointed at a working branch that did not exist yet. The order is now the cycle it always meant to be: <span class="hifi-hl-green">engage at creation, work, then land</span>. The landing trigger surfaces once there is work on the tree, and the press resolves the branch itself — a fresh app takes its <span class="hifi-hl-blue">first turn-over</span> with the same overlay and care as the app’s very first landing; a working branch simply restarts; an established app carries the work onto its working branch.',
-          'And git actions fired from any page now carry the app’s <span class="hifi-hl-green">own name</span> to the bridge — a push from the Release pane lands on the right repository whether or not anything ever set focus that session.',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'v0940',
-    label: 'New in 0.940.0',
-    features: [
-      {
-        title: 'Born from the freshest template',
-        color: 'green',
-        summary: 'Creating a new app now refreshes the template to the latest release before the birth — never a stale vintage — and a one-press Create door joins SCP Management.',
-        detail: [
-          'A field catch: a new app could be born from whatever template vintage its workspace had frozen at, wearing a current version over old bones. Every template birth now <span class="hifi-hl-green">refreshes to the freshest release first</span> — the same retained comparison machinery the update circuit already trusts — falling back gracefully when offline. The staged rail says so as it works: refreshing the template, then clone, install, ready.',
-          'And creation is now a page away: <span class="hifi-hl-green">Create a New SCP</span> in SCP Management — one PascalCase name, one press, the same staged rail the manifest install walks. The TUI path is honest too: typing lands from the first key, and every character belongs to the name you are writing.',
-        ],
-      },
-      {
-        title: 'The shader stands its ground',
-        color: 'purple',
-        summary: 'A render-mode choice now survives every internal rewrite — the chromatic shader no longer goes dark after a session of heavy motion.',
-        detail: [
-          'The one writer that recorded your render-mode choice could be overwritten by routine internal refreshes — the choice silently erased, the shader falling dark. Every writer now <span class="hifi-hl-purple">preserves the shader fields</span> it does not own. And closing the CLI now reliably carries the whole window set down with it — no orphaned windows holding the stage.',
-        ],
-      },
-    ],
-  },
+// MD-UM · LEG 2 · A pinned RELEASE (a differential wing) — a ReleaseCategory plus the versioned
+// fields the differential keys on: the version string, the muxameter (the pinned counter history),
+// and the authored magnitude (1-5). The evergreen tour categories carry none of these.
+interface ReleaseWing extends ReleaseCategory {
+  version?: string;
+  muxameter?: { cli: number; scp: number };
+  magnitude?: number;
+}
+
+// MD-UM · LEG 2 · THE MANIFEST SHAPE (updates.json · schemaVersion 1). Typed loosely against the
+// build-time JSON import — the JSON's `color` fields are plain strings; we assert the mapped
+// SpectrumColor at the tour boundary (the copy is repo-authored, the tokens are 1:1 hifi families).
+interface UpdateManifest {
+  schemaVersion: number;
+  current: string;
+  muxameter: { cli: number; scp: number };
+  releases: ReleaseWing[];
+}
+
+// MD-UM · LEG 3/4 · THE INCOMING RELAY SHAPE — the fetched manifest crosses a network the bridge
+// does not control, so its `color` fields are plain strings (not the SpectrumColor union). This is
+// the relay-boundary type for the `releases` prop; it is coerced to ReleaseWing at the differential
+// computed (the tokens are 1:1 hifi families · repo-authored copy).
+interface IncomingReleaseFeature {
+  title: string;
+  color: string;
+  summary: string;
+  detail: string[];
+}
+interface IncomingRelease {
+  id: string;
+  version?: string;
+  label: string;
+  muxameter?: { cli: number; scp: number };
+  magnitude?: number;
+  features: IncomingReleaseFeature[];
+}
+
+// MD-UM · LEG 2 · THE COMPONENT PROPS (no fine controls yet — mode + the applied increment + the
+// incoming releases relay). Home Page mount omits all three → 'current' default → byte-parity.
+const props = withDefaults(
+  defineProps<{
+    // 'current' = the Home Page relay (the full tour · visually unchanged).
+    // 'differential' = the Update Page (Incoming vs Operating split, keyed on appliedScp).
+    mode?: 'current' | 'differential';
+    // THE APPLIED INCREMENT (the SHARPENED LAW): this SCP's own scp.config.json scsMuxameterScp.
+    // A release is INCOMING iff release.muxameter.scp > appliedScp — the differential is the
+    // per-SCP reminder, keyed on what THIS SCP has LANDED, never on the version string.
+    appliedScp?: number | null;
+    // THE INCOMING RELEASES (LEG 3's relay) — the fetched manifest's release wings (relay-boundary
+    // shape). Absent ⇒ the local updates.json wings stand in (the local side needs no relay).
+    releases?: IncomingRelease[] | null;
+  }>(),
+  { mode: 'current', appliedScp: null, releases: null },
+);
+
+// MD-UM · LEG 2 · THE LOCAL MANIFEST — the four pinned wings, build-time imported.
+const localManifest = updates as unknown as UpdateManifest;
+
+// The 18 EVERGREEN TOUR categories — the older release wings (v0939-v0930) + the feature tour
+// (Sessions … Look & Feel). These are NOT differential releases (no version/muxameter/magnitude);
+// they stay in the component so the current-mode render is byte-identical to the retired array.
+const EVERGREEN_TOUR: ReleaseCategory[] = [
   {
     id: 'v0939',
     label: 'New in 0.939.0',
@@ -937,6 +921,16 @@ const RELEASE_SITE: ReleaseCategory[] = [
   },
 ];
 
+// MD-UM · LEG 2 · THE MERGED TOUR (current-mode source) — the four pinned wings from the local
+// manifest, in their versioned order, PREPENDED to the 18 evergreen categories. This reconstructs
+// the exact 22-category sequence the retired RELEASE_SITE array carried, so the current-mode render
+// (the Home Page mount) is byte-identical. The manifest wings are ReleaseWings (a superset of
+// ReleaseCategory) — id/label/features drive the tour; version/muxameter/magnitude drive differential.
+const TOUR: ReleaseCategory[] = [
+  ...(localManifest.releases as ReleaseCategory[]),
+  ...EVERGREEN_TOUR,
+];
+
 // A flat, addressable list of every feature — each carries its category label + a stable key so the
 // nav can render category breaks and the pane can resolve the active feature by key.
 interface FlatFeature extends ReleaseFeature {
@@ -946,9 +940,10 @@ interface FlatFeature extends ReleaseFeature {
   key: string;
 }
 
-const flatFeatures = computed<FlatFeature[]>(() => {
+// MD-UM · LEG 2 · flatten a category list into addressable nav rows (shared by current + differential).
+const flattenTour = (cats: ReleaseCategory[]): FlatFeature[] => {
   const rows: FlatFeature[] = [];
-  for (const cat of RELEASE_SITE) {
+  for (const cat of cats) {
     cat.features.forEach((f, i) => {
       rows.push({
         ...f,
@@ -960,14 +955,16 @@ const flatFeatures = computed<FlatFeature[]>(() => {
     });
   }
   return rows;
-});
+};
+
+const flatFeatures = computed<FlatFeature[]>(() => flattenTour(TOUR));
 
 // Total feature count — the little tally shown in the nav header.
 const featureCount = computed<number>(() => flatFeatures.value.length);
 
 // Default selection = the first feature.
-const activeKey = ref<string>(RELEASE_SITE[0].features[0]
-  ? RELEASE_SITE[0].id + '·' + RELEASE_SITE[0].features[0].title
+const activeKey = ref<string>(TOUR[0]?.features[0]
+  ? TOUR[0].id + '·' + TOUR[0].features[0].title
   : '');
 
 const activeFeature = computed<FlatFeature | undefined>(() =>
@@ -981,10 +978,63 @@ const selectFeature = (key: string): void => {
 // The head pane family for a color token — a direct 1:1 into the existing hifi-pane-{spectrum}
 // families defined in src/style.css (never an invented class).
 const headPaneClass = (color: SpectrumColor): string => `hifi-pane-${color}`;
+
+// ═════════════════════════════════════════════════════════════════════════════════════
+// MD-UM · LEG 2 · THE DIFFERENTIAL (mode 'differential' · the Update Page split)
+// ═════════════════════════════════════════════════════════════════════════════════════
+// THE SHARPENED LAW (user · overrides the version string): the discriminator keys on the SCP's
+// APPLIED INCREMENT (appliedScp · scp.config.json scsMuxameterScp), NEVER the version. A release is
+// INCOMING for this SCP iff release.muxameter.scp > appliedScp. INCOMING = pending; OPERATING = the
+// already-applied (release.muxameter.scp <= appliedScp). The releases source is the relay (LEG 3)
+// when present, else the local manifest wings (the local-side dev loop needs no network).
+const differentialReleases = computed<ReleaseWing[]>(() => {
+  const relayed = props.releases;
+  // Coerce the relay-boundary shape (color: string) to ReleaseWing (color: SpectrumColor). The
+  // color tokens are repo-authored 1:1 hifi families — the assertion is safe at this boundary.
+  if (relayed && relayed.length > 0) return relayed as unknown as ReleaseWing[];
+  return localManifest.releases;
+});
+
+// A pinned wing's own scp counter (its muxameter.scp) — the differential key. Absent ⇒ -Infinity so
+// a wing lacking the counter never counts as incoming (never a false pending nag).
+const wingScp = (r: ReleaseWing): number =>
+  r.muxameter && typeof r.muxameter.scp === 'number' ? r.muxameter.scp : -Infinity;
+
+// INCOMING — the wings this SCP has NOT yet landed (muxameter.scp > appliedScp). When appliedScp is
+// null (a pre-law SCP), nothing is treated as applied → every counter-bearing wing is incoming.
+const incomingReleases = computed<ReleaseWing[]>(() => {
+  const applied = props.appliedScp;
+  const floor = typeof applied === 'number' ? applied : -Infinity;
+  return differentialReleases.value.filter((r) => wingScp(r) > floor);
+});
+
+// OPERATING — the remaining wings (already applied · muxameter.scp <= appliedScp).
+const operatingReleases = computed<ReleaseWing[]>(() => {
+  const applied = props.appliedScp;
+  const floor = typeof applied === 'number' ? applied : -Infinity;
+  return differentialReleases.value.filter((r) => wingScp(r) <= floor);
+});
+
+// The honest empty state — you are current when nothing is pending for THIS SCP.
+const isCurrentForScp = computed<boolean>(() => incomingReleases.value.length === 0);
+
+// The Operating fold — collapsed by default (the already-applied history is a fold, not the focus).
+const operatingOpen = ref<boolean>(false);
+const toggleOperating = (): void => { operatingOpen.value = !operatingOpen.value; };
+
+// The magnitude chip row — 1-5 filled chips in the release's Pewter voice (the wing's own color is
+// per-feature, so the row uses a neutral filled/empty rendering; the count IS the signal).
+const MAGNITUDE_MAX = 5;
+const magnitudeChips = (mag: number | undefined): boolean[] => {
+  const n = typeof mag === 'number' ? Math.max(0, Math.min(MAGNITUDE_MAX, mag)) : 0;
+  return Array.from({ length: MAGNITUDE_MAX }, (_, i) => i < n);
+};
 </script>
 
 <template>
-  <div class="release-minisite">
+  <!-- MD-UM · LEG 2 · mode 'current' (default · the Home Page relay) renders the full tour
+       IDENTICALLY to the retired array — the nav + content pane are byte-unchanged. -->
+  <div v-if="mode === 'current'" class="release-minisite">
     <!-- THE NAV SIDEBAR · all 44 features, grouped with a designed break per category. -->
     <nav class="rms-nav" aria-label="Release features by category">
       <div class="rms-nav-head">
@@ -1041,6 +1091,106 @@ const headPaneClass = (color: SpectrumColor): string => `hifi-pane-${color}`;
           ></p>
         </div>
       </article>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════════════
+       MD-UM · LEG 2 · mode 'differential' (the Update Page · the SHARPENED LAW split).
+       INCOMING = release.muxameter.scp > appliedScp (pending for THIS SCP · the per-SCP
+       reminder). OPERATING = the already-applied wings (a collapsed fold). Reuses the existing
+       hifi-pane-{color} head idiom + the rms-card body family (minimal CSS additions only).
+       ═══════════════════════════════════════════════════════════════════════════════════ -->
+  <div v-else class="rms-differential">
+    <!-- INCOMING · the pending releases (each headed by its label + a magnitude chip row). -->
+    <section class="rms-diff-section" aria-label="Incoming updates">
+      <header class="rms-diff-head">
+        <span class="rms-diff-eyebrow hifi-mono">INCOMING</span>
+        <span class="rms-diff-sub hifi-mono">what this update carries</span>
+      </header>
+
+      <!-- The honest empty state — current for this SCP. -->
+      <p v-if="isCurrentForScp" class="rms-diff-empty">
+        You are current — nothing pending for this SCP.
+      </p>
+
+      <article
+        v-for="rel in incomingReleases"
+        :key="rel.id"
+        class="rms-diff-release"
+      >
+        <header class="rms-diff-release-head">
+          <span class="rms-diff-release-label hifi-heading">{{ rel.label }}</span>
+          <!-- THE MAGNITUDE INDICATOR · 1-5 filled chips in the Pewter voice (the count IS the signal). -->
+          <span class="rms-diff-mag" :aria-label="`magnitude ${rel.magnitude ?? 0} of ${MAGNITUDE_MAX}`">
+            <span
+              v-for="(filled, i) in magnitudeChips(rel.magnitude)"
+              :key="i"
+              :class="['rms-diff-mag-chip', { filled }]"
+            ></span>
+          </span>
+        </header>
+
+        <div class="rms-diff-feature-list">
+          <article
+            v-for="feat in rel.features"
+            :key="rel.id + '·' + feat.title"
+            class="rms-card rms-diff-card"
+          >
+            <header :class="['rms-card-head', headPaneClass(feat.color)]">
+              <span class="rms-card-cat hifi-mono">{{ rel.label }}</span>
+              <h3 class="rms-card-title hifi-heading">{{ feat.title }}</h3>
+              <p class="rms-card-lede">{{ feat.summary }}</p>
+            </header>
+            <div :class="['rms-card-body', `rms-accent-${feat.color}`]">
+              <p
+                v-for="(para, i) in feat.detail"
+                :key="i"
+                class="rms-card-para"
+                v-html="para"
+              ></p>
+            </div>
+          </article>
+        </div>
+      </article>
+    </section>
+
+    <!-- OPERATING · the already-applied releases (dimmed · collapsed fold · closed by default). -->
+    <section
+      v-if="operatingReleases.length > 0"
+      class="rms-diff-section rms-diff-operating"
+      aria-label="Operating releases"
+    >
+      <button
+        type="button"
+        class="rms-diff-fold-toggle hifi-mono"
+        :aria-expanded="operatingOpen"
+        @click="toggleOperating"
+      >
+        <span class="rms-diff-fold-caret">{{ operatingOpen ? '▾' : '▸' }}</span>
+        OPERATING · {{ operatingReleases.length }} already applied
+      </button>
+
+      <div v-if="operatingOpen" class="rms-diff-fold-body">
+        <article
+          v-for="rel in operatingReleases"
+          :key="rel.id"
+          class="rms-diff-release rms-diff-release-dim"
+        >
+          <header class="rms-diff-release-head">
+            <span class="rms-diff-release-label hifi-heading">{{ rel.label }}</span>
+            <span class="rms-diff-mag" :aria-label="`magnitude ${rel.magnitude ?? 0} of ${MAGNITUDE_MAX}`">
+              <span
+                v-for="(filled, i) in magnitudeChips(rel.magnitude)"
+                :key="i"
+                :class="['rms-diff-mag-chip', { filled }]"
+              ></span>
+            </span>
+          </header>
+          <ul class="rms-diff-operating-titles">
+            <li v-for="feat in rel.features" :key="feat.title">{{ feat.title }}</li>
+          </ul>
+        </article>
+      </div>
     </section>
   </div>
 </template>
@@ -1287,5 +1437,159 @@ const headPaneClass = (color: SpectrumColor): string => `hifi-pane-${color}`;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
+}
+
+/* ===================== MD-UM · LEG 2 · THE DIFFERENTIAL (mode 'differential') =====================
+   The Update Page split. Minimal additions — the release cards reuse the rms-card family above; only
+   the section framing, the magnitude chip row, and the Operating fold are new. */
+.rms-differential {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rms-diff-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rms-diff-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.rms-diff-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rms-diff-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: rgba(235, 231, 222, 0.5);
+}
+
+.rms-diff-empty {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: rgba(235, 231, 222, 0.7);
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--color-green, rgba(120, 200, 140, 0.6));
+  border-radius: 6px;
+}
+
+.rms-diff-release {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.rms-diff-release-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rms-diff-release-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(240, 236, 228, 0.95);
+}
+
+/* THE MAGNITUDE CHIP ROW · 1-5 filled/empty chips — the count IS the signal. */
+.rms-diff-mag {
+  display: inline-flex;
+  gap: 0.22rem;
+  align-items: center;
+}
+
+.rms-diff-mag-chip {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.rms-diff-mag-chip.filled {
+  background: var(--color-yellow, rgba(230, 200, 90, 0.85));
+  border-color: var(--color-yellow-light, rgba(240, 216, 130, 0.9));
+}
+
+.rms-diff-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* The differential release cards reuse .rms-card; drop the viewheight framing so they flow. */
+.rms-diff-card {
+  height: auto;
+}
+
+/* THE OPERATING FOLD · the already-applied history — dimmed + collapsed by default. */
+.rms-diff-operating {
+  opacity: 0.72;
+}
+
+.rms-diff-fold-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: rgba(235, 231, 222, 0.7);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.rms-diff-fold-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rms-diff-fold-caret {
+  font-size: 0.7rem;
+  color: rgba(235, 231, 222, 0.5);
+}
+
+.rms-diff-fold-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+.rms-diff-release-dim {
+  padding: 0.6rem 0.8rem;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.rms-diff-operating-titles {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rms-diff-operating-titles li {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(235, 231, 222, 0.62);
 }
 </style>
