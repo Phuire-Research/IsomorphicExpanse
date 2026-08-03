@@ -212,6 +212,10 @@ const installedRows = computed(() => {
     active: name in bound,
     // The live-guard rail (Pewter RD §1.6): a bound SCP is running → Archive/Delete refused.
     live: name in bound,
+    // THE TEMPLATE PROTECTION (the user's field law): the template is the SYSTEM ground
+    // every install builds from — the bridge guards refuse it (system-scp-cannot-*), and
+    // the UI must never present live controls the guard would only bounce.
+    system: name === 'template',
     browserUrl: bound[name]?.browserUrl ?? '',
     port: bound[name]?.port ?? null,
     // WAPF role — 'instance' rows get the ochre-hatch + Archive-disabled; 'owner' rows fire
@@ -494,24 +498,28 @@ function fireDelete(name: string, fromArchive: boolean): void {
             <button
               class="scs-install-row-btn scs-install-row-btn-archive"
               type="button"
-              :disabled="!!rowBusy[row.name] || row.live || row.worktree === 'instance' || !roster.bridgeUp"
-              :title="row.live
-                ? 'Stop the SCP first — archive requires the process to be offline'
-                : row.worktree === 'instance'
-                  ? 'A worktree instance — Delete retires it; the branch survives in its parent'
-                  : row.worktree === 'owner'
-                    ? 'Owns worktrees — Archive will confer git cleanup'
-                    : 'Archive this SCP (reversible · moves to the vault)'"
+              :disabled="!!rowBusy[row.name] || row.live || row.system || row.worktree === 'instance' || !roster.bridgeUp"
+              :title="row.system
+                ? 'The template is system-protected — the ground every install builds from'
+                : row.live
+                  ? 'Stop the SCP first — archive requires the process to be offline'
+                  : row.worktree === 'instance'
+                    ? 'A worktree instance — Delete retires it; the branch survives in its parent'
+                    : row.worktree === 'owner'
+                      ? 'Owns worktrees — Archive will confer git cleanup'
+                      : 'Archive this SCP (reversible · moves to the vault)'"
               @click="handleArchive(row.name, row.worktree)"
             >Archive</button>
             <!-- Delete (red · PERMANENT) · opens the typed-name confirm expansion (§1.5) -->
             <button
               class="scs-install-row-btn scs-install-row-btn-delete"
               type="button"
-              :disabled="!!rowBusy[row.name] || row.live || !roster.bridgeUp"
-              :title="row.live
-                ? 'Stop the SCP first — delete requires the process to be offline'
-                : 'Delete this SCP PERMANENTLY (removes the directory from disk)'"
+              :disabled="!!rowBusy[row.name] || row.live || row.system || !roster.bridgeUp"
+              :title="row.system
+                ? 'The template is system-protected — the ground every install builds from'
+                : row.live
+                  ? 'Stop the SCP first — delete requires the process to be offline'
+                  : 'Delete this SCP PERMANENTLY (removes the directory from disk)'"
               @click="openDeleteConfirm(row.name)"
             >{{ deleteOpenFor === row.name ? 'Delete ▲' : 'Delete' }}</button>
           </div>
